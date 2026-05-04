@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>NutriLogic | Admin Panel</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+
+    <style>
+        :root {
+            --primary-green: #22c55e;
+            --hover-green: #16a34a;
+            --bg-mint: #f0fdf4;
+            --card-white: #ffffff;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+            --border-soft: #f1f5f9;
+        }
+
+        body {
+            background-color: var(--bg-mint);
+            font-family: 'Poppins', sans-serif;
+            color: var(--text-dark);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* ── HEADER ── */
+        .header-nav {
+            background: white;
+            padding: 14px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-soft);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .brand-box { display: flex; align-items: center; gap: 12px; }
+        .brand-text h1 { font-size: 1.4rem; font-weight: 700; margin: 0; color: var(--primary-green); }
+        .admin-badge {
+            background: #fee2e2; color: #dc2626;
+            font-size: 0.6rem; font-weight: 700;
+            padding: 3px 10px; border-radius: 100px;
+            text-transform: uppercase; letter-spacing: 1.2px;
+            border: 1px solid #fecaca;
+        }
+        .logout-btn {
+            color: #ef4444; text-decoration: none; font-weight: 600;
+            display: flex; align-items: center; gap: 8px;
+            padding: 9px 18px; border-radius: 10px; transition: 0.2s;
+            border: 1.5px solid #fecaca; font-size: 0.85rem;
+        }
+        .logout-btn:hover { background: #fee2e2; color: #b91c1c; }
+
+        /* ── LOGO BOX — same as other pages ── */
+        .logo-box {
+            background: linear-gradient(135deg, var(--primary-green), #16a34a);
+            color: white; padding: 10px; border-radius: 12px;
+        }
+
+        /* ── HERO BANNER ── */
+        .hero-banner {
+            background: linear-gradient(135deg, #052e16 0%, #14532d 40%, #16a34a 100%);
+            padding: 36px 5% 32px;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero-banner::before {
+            content: '';
+            position: absolute; inset: 0;
+            background-image: radial-gradient(rgba(255,255,255,0.07) 1px, transparent 1px);
+            background-size: 26px 26px;
+        }
+        .hero-banner::after {
+            content: '';
+            position: absolute;
+            width: 400px; height: 400px;
+            background: rgba(255,255,255,0.04);
+            border-radius: 50%;
+            top: -150px; right: -80px;
+        }
+        .hero-content { position: relative; z-index: 1; }
+        .hero-eyebrow {
+            font-size: 0.68rem; font-weight: 600;
+            color: rgba(255,255,255,0.5);
+            text-transform: uppercase; letter-spacing: 2px;
+            margin-bottom: 6px;
+        }
+        .hero-title {
+            font-size: 1.8rem; font-weight: 700;
+            color: white; margin-bottom: 6px; line-height: 1.2;
+        }
+        .hero-title span { color: #86efac; }
+        .hero-sub { color: rgba(255,255,255,0.55); font-size: 0.85rem; }
+
+        /* ── PAGE WRAPPER ── */
+        .page-wrapper { max-width: 1200px; margin: 0 auto; padding: 32px 20px 60px; width: 100%; }
+
+        /* ── SUCCESS ALERT ── */
+        .alert-success-custom {
+            background: #f0fdf4; border: 1px solid #bbf7d0;
+            color: #15803d; padding: 14px 20px; border-radius: 14px;
+            margin-bottom: 24px; display: flex; align-items: center;
+            gap: 10px; font-weight: 600; font-size: 0.88rem;
+            animation: fadeSlide 0.4s ease;
+        }
+        @keyframes fadeSlide {
+            from { opacity:0; transform: translateY(-8px); }
+            to   { opacity:1; transform: translateY(0); }
+        }
+
+        /* ── STAT CARDS ── */
+        .stat-card {
+            background: white; border-radius: 20px;
+            padding: 22px 18px; border: 1px solid var(--border-soft);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+            display: flex; align-items: center; gap: 15px;
+            transition: all 0.3s ease; height: 100%;
+            position: relative; overflow: hidden;
+        }
+        .stat-card::after {
+            content: '';
+            position: absolute; bottom: 0; left: 0; right: 0;
+            height: 3px; border-radius: 0 0 20px 20px;
+            opacity: 0; transition: 0.3s;
+        }
+        .stat-card.sc-green::after  { background: var(--primary-green); }
+        .stat-card.sc-blue::after   { background: #3b82f6; }
+        .stat-card.sc-orange::after { background: #f97316; }
+        .stat-card.sc-red::after    { background: #ef4444; }
+        .stat-card:hover { transform: translateY(-5px); box-shadow: 0 12px 28px rgba(0,0,0,0.08); }
+        .stat-card:hover::after { opacity: 1; }
+
+        .stat-icon {
+            width: 54px; height: 54px; border-radius: 16px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem; flex-shrink: 0;
+        }
+        .si-green  { background: #dcfce7; color: #16a34a; }
+        .si-blue   { background: #dbeafe; color: #1d4ed8; }
+        .si-orange { background: #ffedd5; color: #ea580c; }
+        .si-red    { background: #fee2e2; color: #dc2626; }
+
+        .stat-label {
+            font-size: 0.67rem; font-weight: 600; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;
+        }
+        .stat-value { font-size: 2.2rem; font-weight: 700; color: var(--text-dark); line-height: 1; }
+
+        /* ── SEARCH CARD ── */
+        .search-card {
+            background: white; border-radius: 18px;
+            padding: 18px 22px; border: 1px solid var(--border-soft);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.03); margin-bottom: 20px;
+        }
+        .search-label {
+            font-size: 0.7rem; font-weight: 700;
+            color: var(--text-muted); text-transform: uppercase;
+            letter-spacing: 1px; margin-bottom: 12px;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .search-icon-wrap { position: relative; }
+        .search-icon-wrap i {
+            position: absolute; left: 13px; top: 50%;
+            transform: translateY(-50%); color: #94a3b8; font-size: 0.82rem; pointer-events: none;
+        }
+        .search-input {
+            border: 1.5px solid #e2e8f0; border-radius: 12px;
+            padding: 11px 16px 11px 40px;
+            font-family: 'Poppins', sans-serif; font-size: 0.88rem;
+            width: 100%; outline: none; transition: 0.25s; color: var(--text-dark);
+        }
+        .search-input:focus { border-color: var(--primary-green); box-shadow: 0 0 0 3px rgba(34,197,94,0.1); }
+        .search-input::placeholder { color: #94a3b8; }
+        .btn-green {
+            background: var(--primary-green); color: white; border: none;
+            border-radius: 12px; padding: 11px 24px;
+            font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 0.85rem;
+            cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 7px;
+        }
+        .btn-green:hover { background: var(--hover-green); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(34,197,94,0.3); }
+        .btn-outline-muted {
+            background: white; color: var(--text-muted); border: 1.5px solid #e2e8f0;
+            border-radius: 12px; padding: 11px 18px;
+            font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 0.85rem;
+            text-decoration: none; transition: 0.2s; display: flex; align-items: center; gap: 7px;
+        }
+        .btn-outline-muted:hover { border-color: #94a3b8; color: var(--text-dark); }
+
+        /* ── TABLE CARD ── */
+        .table-card {
+            background: white; border-radius: 20px;
+            border: 1px solid var(--border-soft);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04); overflow: hidden;
+        }
+        .table-card-header {
+            padding: 20px 26px; border-bottom: 1px solid var(--border-soft);
+            display: flex; justify-content: space-between; align-items: center;
+            background: linear-gradient(to right, #fafffe, white);
+        }
+        .table-card-title {
+            font-size: 0.78rem; font-weight: 700; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: 1px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .count-badge {
+            background: #dcfce7; color: #15803d;
+            font-size: 0.7rem; font-weight: 700;
+            padding: 4px 14px; border-radius: 100px; border: 1px solid #bbf7d0;
+        }
+
+        table { width: 100%; border-collapse: collapse; }
+        thead th {
+            background: #f8fafc; padding: 13px 22px;
+            text-align: left; font-size: 0.67rem; font-weight: 700;
+            color: var(--text-muted); text-transform: uppercase;
+            letter-spacing: 1px; border-bottom: 1px solid var(--border-soft);
+        }
+        tbody tr { border-bottom: 1px solid var(--border-soft); transition: background 0.15s; }
+        tbody tr:hover { background: #f8fff8; }
+        tbody tr:last-child { border-bottom: none; }
+        tbody td { padding: 16px 22px; font-size: 0.87rem; color: #334155; vertical-align: middle; }
+
+        /* Serial */
+        .serial {
+            width: 30px; height: 30px; background: #f1f5f9;
+            color: var(--text-muted); border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 0.78rem;
+        }
+
+        /* Avatar + user cell */
+        .user-cell { display: flex; align-items: center; gap: 12px; }
+        .avatar {
+            width: 38px; height: 38px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-green), var(--hover-green));
+            color: white; display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 0.9rem; flex-shrink: 0;
+            box-shadow: 0 3px 8px rgba(34,197,94,0.25);
+        }
+        .avatar.av-admin {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            box-shadow: 0 3px 8px rgba(220,38,38,0.25);
+        }
+        .uname { font-weight: 600; color: var(--text-dark); font-size: 0.88rem; }
+
+        /* Role pill */
+        .role-pill {
+            padding: 5px 13px; border-radius: 100px;
+            font-size: 0.65rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.8px;
+        }
+        .rp-admin { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
+        .rp-user  { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+
+        /* Status */
+        .status-active {
+            display: inline-flex; align-items: center; gap: 6px;
+            font-size: 0.8rem; font-weight: 600; color: #16a34a;
+        }
+        .status-dot {
+            width: 7px; height: 7px; background: var(--primary-green);
+            border-radius: 50%; display: inline-block;
+            box-shadow: 0 0 0 3px rgba(34,197,94,0.2);
+        }
+
+        /* Delete — icon only, professional */
+        .btn-delete-icon {
+            width: 34px; height: 34px;
+            background: none; border: 1.5px solid #fecaca;
+            color: #ef4444; border-radius: 9px;
+            cursor: pointer; transition: all 0.2s;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 0.82rem; text-decoration: none;
+        }
+        .btn-delete-icon:hover {
+            background: #fef2f2; border-color: #ef4444;
+            color: #b91c1c; transform: scale(1.1);
+            box-shadow: 0 3px 10px rgba(239,68,68,0.2);
+        }
+
+        /* Protected — icon only */
+        .btn-protected-icon {
+            width: 34px; height: 34px;
+            background: none; border: 1.5px solid #e2e8f0;
+            color: #cbd5e1; border-radius: 9px;
+            cursor: not-allowed;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 0.82rem;
+        }
+
+        /* Empty state */
+        .empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+        .empty-state i { font-size: 2.8rem; margin-bottom: 14px; display: block; opacity: 0.12; }
+
+        /* Footer */
+        footer {
+            margin-top: auto; background: white;
+            padding: 22px 5%; border-top: 1px solid var(--border-soft);
+            text-align: center; color: var(--text-muted); font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header-nav">
+    <div class="brand-box">
+        <!-- CHANGED: logo-box with leaf icon — same as all other pages -->
+        <div class="logo-box"><i class="fa-solid fa-leaf"></i></div>
+        <span class="fw-bold fs-4">NutriLogic</span>
+        <span class="admin-badge ms-2">Admin</span>
+    </div>
+    <div class="d-flex align-items-center gap-3">
+        <div class="d-flex align-items-center justify-content-center rounded-circle text-white fw-bold"
+             style="width:38px;height:38px;background:linear-gradient(135deg,#22c55e,#16a34a);font-size:0.95rem;box-shadow:0 3px 8px rgba(34,197,94,0.3);">A</div>
+        <a th:href="@{/logout}" class="logout-btn">
+            <i class="fa-solid fa-power-off"></i> Logout
+        </a>
+    </div>
+</div>
+
+<!-- HERO BANNER -->
+<div class="hero-banner">
+    <div class="hero-content">
+        <div class="hero-eyebrow"><i class="fa-solid fa-user-shield me-1"></i> Control Panel</div>
+        <div class="hero-title">Admin <span>Dashboard</span></div>
+        <div class="hero-sub">Manage users, monitor BMI records and control system access.</div>
+    </div>
+</div>
+
+<div class="page-wrapper">
+
+    <!-- Success Alert -->
+    <div th:if="${successMessage}" class="alert-success-custom">
+        <i class="fa-solid fa-circle-check"></i>
+        <span th:text="${successMessage}"></span>
+    </div>
+
+    <!-- Stat Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3 col-6">
+            <div class="stat-card sc-green">
+                <div class="stat-icon si-green"><i class="fa-solid fa-users"></i></div>
+                <div>
+                    <div class="stat-label">Total Users</div>
+                    <div class="stat-value" th:text="${totalUsers}">0</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="stat-card sc-blue">
+                <div class="stat-icon si-blue"><i class="fa-solid fa-user-check"></i></div>
+                <div>
+                    <div class="stat-label">Active Users</div>
+                    <div class="stat-value" th:text="${totalUsers}">0</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="stat-card sc-orange">
+                <div class="stat-icon si-orange"><i class="fa-solid fa-weight-scale"></i></div>
+                <div>
+                    <div class="stat-label">BMI Records</div>
+                    <div class="stat-value" th:text="${totalBmiRecords}">0</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="stat-card sc-red">
+                <div class="stat-icon si-red"><i class="fa-solid fa-user-shield"></i></div>
+                <div>
+                    <div class="stat-label">Admins</div>
+                    <div class="stat-value">1</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="search-card">
+        <div class="search-label">
+            <i class="fa-solid fa-magnifying-glass" style="color:var(--primary-green);"></i>
+            Search Users
+        </div>
+        <form th:action="@{/admin/dashboard}" method="get">
+            <div class="d-flex gap-2 align-items-center">
+                <div class="search-icon-wrap flex-grow-1" style="max-width:440px;">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" name="search" th:value="${search}"
+                           placeholder="Search by username..." class="search-input"/>
+                </div>
+                <button type="submit" class="btn-green">
+                    <i class="fa-solid fa-search"></i> Search
+                </button>
+                <a th:href="@{/admin/dashboard}" class="btn-outline-muted">
+                    <i class="fa-solid fa-xmark"></i> Clear
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Table -->
+    <div class="table-card">
+        <div class="table-card-header">
+            <div class="table-card-title">
+                <i class="fa-solid fa-table-list" style="color:var(--primary-green);"></i>
+                Registered Members
+            </div>
+            <span class="count-badge" th:text="${users.size()} + ' user(s) found'">0 found</span>
+        </div>
+
+        <div th:if="${not #lists.isEmpty(users)}">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>User</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th style="text-align:center;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="u, iterStat : ${users}">
+                        <td><div class="serial" th:text="${iterStat.count}"></div></td>
+                        <td>
+                            <div class="user-cell">
+                                <div th:class="${u.role == 'ROLE_ADMIN'} ? 'avatar av-admin' : 'avatar'"
+                                     th:text="${#strings.substring(u.username,0,1).toUpperCase()}"></div>
+                                <span class="uname" th:text="${u.username}"></span>
+                            </div>
+                        </td>
+                        <td style="font-size:0.82rem;color:#64748b;" th:text="${u.email != null ? u.email : 'N/A'}"></td>
+                        <td>
+                            <span th:class="${u.role == 'ROLE_ADMIN'} ? 'role-pill rp-admin' : 'role-pill rp-user'"
+                                  th:text="${u.role}"></span>
+                        </td>
+                        <td>
+                            <span class="status-active">
+                                <span class="status-dot"></span> Active
+                            </span>
+                        </td>
+                        <td style="text-align:center;">
+                            <!-- Protected — shield icon only -->
+                            <span th:if="${u.role == 'ROLE_ADMIN'}"
+                                  class="btn-protected-icon"
+                                  title="Admin is protected">
+                                <i class="fa-solid fa-shield-halved"></i>
+                            </span>
+                            <!-- Delete — trash icon only -->
+                            <a th:if="${u.role != 'ROLE_ADMIN'}"
+                               th:href="@{/admin/deleteUser/{id}(id=${u.id})}"
+                               onclick="return confirm('Delete [[${u.username}]]? This also removes all their health records!')"
+                               class="btn-delete-icon"
+                               title="Delete user">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div th:if="${#lists.isEmpty(users)}" class="empty-state">
+            <i class="fa-solid fa-users-slash"></i>
+            <p class="fw-bold mb-1">No users found</p>
+            <small>Try a different search term</small>
+        </div>
+    </div>
+
+</div>
+
+<footer>© 2026 NutriLogic • Smart Health Intelligence</footer>
+
+</body>
+</html>

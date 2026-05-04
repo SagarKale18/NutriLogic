@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>NutriLogic | Health Journey</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --primary: #22c55e;
+            --bg-mint: #f8fafc;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #f1f5f9;
+        }
+        body { font-family: 'Poppins', sans-serif; background: var(--bg-mint); color: var(--text-main); min-height: 100vh; }
+
+        /* NAVBAR */
+        .top-nav { background: white; border-bottom: 1px solid var(--border-color); padding: 1.2rem 5%; position: sticky; top: 0; z-index: 1000; }
+        .navbar-brand { font-weight: 700; color: var(--primary) !important; text-decoration: none; font-size: 1.4rem; }
+        .btn-dashboard-return {
+            text-decoration: none; color: var(--text-main); font-weight: 600;
+            padding: 10px 20px; background: white; border-radius: 12px;
+            border: 1px solid var(--border-color); box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: 0.3s; display: inline-flex; align-items: center; gap: 10px;
+        }
+        .btn-dashboard-return:hover { transform: translateY(-2px); color: var(--primary); }
+
+        .page-container { max-width: 1300px; margin: 2rem auto; padding: 0 25px; }
+        .section-card {
+            background: white; border-radius: 28px; border: 1px solid var(--border-color);
+            padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.03); margin-bottom: 2rem;
+        }
+
+        /* STAT SUMMARY CARDS */
+        .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-bottom: 2rem; }
+        .summary-mini {
+            background: white; border-radius: 20px; padding: 20px 16px;
+            border: 1px solid var(--border-color); box-shadow: 0 6px 15px rgba(0,0,0,0.03);
+            text-align: center;
+        }
+        .sm-icon { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1rem; margin: 0 auto 10px; }
+        .sm-val  { font-size: 1.6rem; font-weight: 800; color: var(--text-main); line-height: 1; }
+        .sm-unit { font-size: 0.68rem; color: var(--text-muted); font-weight: 600; }
+        .sm-lbl  { font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 5px; }
+
+        /* CHART */
+        .chart-header { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; font-weight: 700; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; }
+        .chart-tabs { display: flex; gap: 8px; }
+        .chart-tab { padding: 5px 14px; border-radius: 100px; font-size: 0.75rem; font-weight: 600; border: 1.5px solid var(--border-color); background: white; color: var(--text-muted); cursor: pointer; transition: 0.2s; }
+        .chart-tab.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .chart-wrapper { height: 300px; position: relative; }
+
+        /* TABLE */
+        .table th { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); border-bottom: 2px solid var(--border-color); padding: 12px 10px; }
+        .table td { font-size: 0.82rem; padding: 14px 10px; vertical-align: middle; border-bottom: 1px solid #f8fafc; }
+        .table tbody tr:hover { background: #f8fafc; }
+
+        /* BADGES in table */
+        .bmi-indicator { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 10px; font-weight: 700; font-size: 0.8rem; }
+        .bmi-green  { background: #dcfce7; color: #15803d; }
+        .bmi-red    { background: #fee2e2; color: #b91c1c; }
+        .bmi-yellow { background: #fef9c3; color: #a16207; }
+
+        .risk-badge { display: inline-block; padding: 3px 10px; border-radius: 100px; font-size: 0.72rem; font-weight: 700; }
+        .risk-low      { background: #dcfce7; color: #15803d; }
+        .risk-moderate { background: #fef9c3; color: #a16207; }
+        .risk-high     { background: #fee2e2; color: #b91c1c; }
+
+        .cond-badge { display: inline-block; padding: 3px 10px; border-radius: 100px; font-size: 0.72rem; font-weight: 600; background: #f1f5f9; color: #475569; }
+        .cond-none  { background: #dcfce7; color: #15803d; }
+
+        .sleep-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 0.8rem; font-weight: 600; }
+        .sleep-good { color: #15803d; } .sleep-low { color: #d97706; }
+
+        .btn-delete { color: #cbd5e1; transition: 0.2s; background: none; border: none; font-size: 1rem; padding: 4px 8px; border-radius: 8px; }
+        .btn-delete:hover { color: #ef4444; background: #fee2e2; }
+
+        /* Empty state */
+        .empty-state { text-align: center; padding: 60px 20px; }
+        .empty-icon { font-size: 3rem; color: #cbd5e1; margin-bottom: 16px; }
+
+        footer { text-align: center; padding: 30px 0; color: var(--text-muted); font-size: 0.85rem; border-top: 1px solid var(--border-color); background: white; }
+    </style>
+</head>
+<body>
+
+<!-- NAVBAR (unchanged) -->
+<nav class="top-nav d-flex justify-content-between align-items-center">
+    <a class="navbar-brand" th:href="@{/home}">
+        <i class="fa-solid fa-leaf"></i> NutriLogic
+    </a>
+    <div class="d-flex align-items-center gap-4">
+        <div class="text-end d-none d-md-block">
+            <span class="d-block small text-muted">Daily Water</span>
+            <span class="fw-bold text-dark">
+                <span th:text="${user != null ? user.waterCount : '0'}">0</span>/8 glasses
+            </span>
+        </div>
+        <a th:href="@{/home}" class="btn-dashboard-return">
+            <i class="fa-solid fa-arrow-left"></i> Dashboard
+        </a>
+    </div>
+</nav>
+
+<div class="page-container">
+
+    <!-- Header -->
+    <div class="section-card">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+            <div>
+                <h1 class="fw-bold m-0">Journey Analytics</h1>
+                <p class="text-muted mb-0">Health records for
+                    <strong class="text-success" th:text="${username}">User</strong>
+                </p>
+            </div>
+            <div class="text-muted small">
+                <i class="fa-solid fa-database me-1"></i>
+                <span th:text="${#lists.size(history)} + ' records found'">0 records found</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════ SUMMARY MINI CARDS ═══════ -->
+    <div class="summary-grid" th:if="${not #lists.isEmpty(history)}">
+
+        <!-- Latest BMI -->
+        <div class="summary-mini">
+            <div class="sm-icon" style="background:#dcfce7;color:#16a34a;"><i class="fa-solid fa-gauge"></i></div>
+            <div class="sm-val" th:text="${history[0].bmi}">--</div>
+            <div class="sm-unit">Latest BMI</div>
+            <div class="sm-lbl">Body Mass Index</div>
+        </div>
+
+        <!-- Latest NHRS -->
+        <div class="summary-mini">
+            <div class="sm-icon" style="background:#fee2e2;color:#b91c1c;"><i class="fa-solid fa-shield-heart"></i></div>
+            <div class="sm-val" th:text="${history[0].healthRiskScore != null} ? ${history[0].healthRiskScore} : '--'">--</div>
+            <div class="sm-unit">/ 100</div>
+            <div class="sm-lbl">Health Risk Score</div>
+        </div>
+
+        <!-- Total Records -->
+        <div class="summary-mini">
+            <div class="sm-icon" style="background:#dbeafe;color:#1d4ed8;"><i class="fa-solid fa-clipboard-list"></i></div>
+            <div class="sm-val" th:text="${#lists.size(history)}">0</div>
+            <div class="sm-unit">entries</div>
+            <div class="sm-lbl">Total Records</div>
+        </div>
+
+        <!-- Latest Sleep -->
+        <div class="summary-mini">
+            <div class="sm-icon" style="background:#f3e8ff;color:#7c3aed;"><i class="fa-solid fa-moon"></i></div>
+            <div class="sm-val" th:text="${history[0].sleepHours != null and history[0].sleepHours > 0} ? ${history[0].sleepHours} : '--'">--</div>
+            <div class="sm-unit">hrs / night</div>
+            <div class="sm-lbl">Latest Sleep</div>
+        </div>
+
+    </div>
+
+    <!-- ═══════ CHART ═══════ -->
+    <div class="section-card" th:if="${not #lists.isEmpty(history)}">
+        <div class="chart-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-2">
+                <i class="fa-solid fa-chart-line text-success"></i> BMI Trend Over Time
+            </div>
+            <div class="chart-tabs">
+                <button class="chart-tab active" onclick="switchChart('bmi', this)">BMI</button>
+                <button class="chart-tab"        onclick="switchChart('risk', this)">Risk Score</button>
+            </div>
+        </div>
+        <div class="chart-wrapper">
+            <canvas id="mainChart"></canvas>
+        </div>
+    </div>
+
+    <!-- ═══════ DETAILED TABLE ═══════ -->
+    <div class="section-card">
+        <div class="chart-header">
+            <i class="fa-solid fa-table-list text-success"></i> Detailed Health Logs
+        </div>
+
+        <!-- HAS RECORDS -->
+        <div th:if="${not #lists.isEmpty(history)}">
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Weight / Goal</th>
+                            <th>BMI</th>
+                            <th>Risk Score</th>
+                            <th>Condition</th>
+                            <th>Sleep</th>
+                            <th>Water</th>
+                            <th>Logged At</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="p, pStat : ${history}">
+
+                            <!-- Serial Number -->
+                            <td class="text-muted fw-600" th:text="${pStat.index + 1}">1</td>
+
+                            <!-- Weight + Goal -->
+                            <td>
+                                <div class="fw-bold" th:text="${p.weight + ' kg'}">70 kg</div>
+                                <span class="badge rounded-pill bg-light text-dark border px-2 py-1"
+                                      style="font-size:0.68rem;" th:text="${p.goal}">Goal</span>
+                            </td>
+
+                            <!-- BMI with color -->
+                            <td>
+                                <div th:class="${p.bmi < 18.5 or p.bmi >= 30} ? 'bmi-indicator bmi-red' :
+                                               (${p.bmi >= 25} ? 'bmi-indicator bmi-yellow' : 'bmi-indicator bmi-green')">
+                                    <span th:text="${p.bmi}">22.5</span>
+                                    <i th:class="${p.bmi >= 18.5 and p.bmi < 25} ? 'fa-solid fa-check' : 'fa-solid fa-triangle-exclamation'"></i>
+                                </div>
+                            </td>
+
+                            <!-- Health Risk Score -->
+                            <td>
+                                <span th:if="${p.healthRiskScore != null and p.healthRiskScore > 0}"
+                                      th:class="${p.healthRiskScore <= 30} ? 'risk-badge risk-low' :
+                                                 (${p.healthRiskScore <= 60} ? 'risk-badge risk-moderate' : 'risk-badge risk-high')"
+                                      th:text="${p.healthRiskScore <= 30} ? ${p.healthRiskScore} + ' | Low' :
+                                               (${p.healthRiskScore <= 60} ? ${p.healthRiskScore} + ' | Moderate' : ${p.healthRiskScore} + ' | High')">
+                                </span>
+                                <span class="text-muted small" th:if="${p.healthRiskScore == null or p.healthRiskScore == 0}">--</span>
+                            </td>
+
+                            <!-- Medical Condition -->
+                            <td>
+                                <span th:class="${p.medicalCondition == null or p.medicalCondition == 'None'} ? 'cond-badge cond-none' : 'cond-badge'"
+                                      th:text="${p.medicalCondition != null} ? ${p.medicalCondition} : 'None'">None</span>
+                            </td>
+
+                            <!-- Sleep Hours -->
+                            <td>
+                                <span th:if="${p.sleepHours != null and p.sleepHours > 0}"
+                                      th:class="${p.sleepHours >= 7} ? 'sleep-badge sleep-good' : 'sleep-badge sleep-low'">
+                                    <i th:class="${p.sleepHours >= 7} ? 'fa-solid fa-moon' : 'fa-solid fa-triangle-exclamation'"></i>
+                                    <span th:text="${p.sleepHours} + ' hrs'">7 hrs</span>
+                                </span>
+                                <span class="text-muted small" th:if="${p.sleepHours == null or p.sleepHours == 0}">--</span>
+                            </td>
+
+                            <!-- Water Intake -->
+                            <td>
+                                <div class="d-flex align-items-center gap-1">
+                                    <i class="fa-solid fa-droplet text-info" style="font-size:0.8rem;"></i>
+                                    <span class="fw-bold" th:text="${p.waterCount + '/8'}">0/8</span>
+                                </div>
+                            </td>
+
+                            <!-- Date -->
+                            <td class="text-muted small"
+                                th:text="${p.createdAt != null ? #temporals.format(p.createdAt, 'dd MMM yyyy HH:mm') : 'Recent'}">
+                                Date
+                            </td>
+
+                            <!-- Delete -->
+                            <td class="text-end">
+                                <a th:href="@{/delete/{id}(id=${p.id})}"
+                                   onclick="return confirm('Delete this health record?')"
+                                   class="btn-delete">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- EMPTY STATE -->
+        <div class="empty-state" th:if="${#lists.isEmpty(history)}">
+            <div class="empty-icon"><i class="fa-solid fa-chart-line"></i></div>
+            <h4 class="text-muted fw-bold">No records yet</h4>
+            <p class="text-muted small">Complete your health analysis to start tracking your journey.</p>
+            <a href="/healthprofile" class="btn btn-success rounded-pill px-4 mt-2">
+                <i class="fa-solid fa-plus me-1"></i> Start Analysis
+            </a>
+        </div>
+
+    </div>
+</div>
+
+<footer>© 2026 NutriLogic • Smart Health Intelligence</footer>
+
+<script th:inline="javascript">
+    const bmiLabels  = /*[[${chartLabels}]]*/ [];
+    const bmiData    = /*[[${chartData}]]*/ [];
+    const riskData   = /*[[${riskChartData}]]*/ [];
+
+    let mainChart;
+
+    function buildChart(type) {
+        const ctx = document.getElementById('mainChart').getContext('2d');
+        if (mainChart) mainChart.destroy();
+
+        const isRisk = type === 'risk';
+        mainChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: bmiLabels,
+                datasets: [{
+                    label: isRisk ? 'Health Risk Score' : 'BMI Score',
+                    data: isRisk ? riskData : bmiData,
+                    borderColor: isRisk ? '#ef4444' : '#22c55e',
+                    backgroundColor: isRisk ? 'rgba(239,68,68,0.08)' : 'rgba(34,197,94,0.08)',
+                    fill: true,
+                    tension: 0.4,
+                    borderWidth: 3,
+                    pointBackgroundColor: isRisk ? '#ef4444' : '#22c55e',
+                    pointRadius: 5,
+                    pointHoverRadius: 7
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        grid: { color: '#f1f5f9' },
+                        ticks: { font: { family: 'Poppins', size: 11 } }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { font: { family: 'Poppins', size: 11 } }
+                    }
+                }
+            }
+        });
+    }
+
+    function switchChart(type, btn) {
+        document.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
+        btn.classList.add('active');
+        buildChart(type);
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        if (bmiLabels.length > 0) buildChart('bmi');
+    });
+</script>
+</body>
+</html>

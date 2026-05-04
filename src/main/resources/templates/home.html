@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>NutriLogic | Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <style>
+        :root {
+            --primary-green: #22c55e;
+            --primary-dark: #16a34a;
+            --bg-mint: #f8fafc;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+            --border-soft: #f1f5f9;
+            --card-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
+        }
+        body { background-color: var(--bg-mint); font-family: 'Poppins', sans-serif; min-height: 100vh; color: var(--text-dark); }
+
+        /* NAVBAR */
+        .navbar-custom {
+            background: white; border-bottom: 1px solid var(--border-soft);
+            padding: 1rem 8%; position: sticky; top: 0; z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+        }
+        .logo-box { background: linear-gradient(135deg, var(--primary-green), #16a34a); color: white; padding: 10px; border-radius: 12px; }
+        .nav-links-wrapper { gap: 10px; margin-left: 50px; }
+        .nav-link-custom { padding: 10px 18px; border-radius: 12px; text-decoration: none; color: var(--text-muted); font-weight: 500; font-size: 0.95rem; transition: 0.3s; display: flex; align-items: center; gap: 8px; }
+        .nav-link-custom.active { background: #dcfce7; color: #16a34a; font-weight: 600; }
+        .nav-link-custom:hover:not(.active) { background: #f1f5f9; color: var(--text-dark); }
+        .user-chip { background: #ffffff; border: 1px solid var(--border-soft); padding: 6px 18px; border-radius: 50px; display: flex; align-items: center; gap: 12px; font-weight: 600; box-shadow: var(--card-shadow); }
+        .avatar-circle { width: 34px; height: 34px; background: var(--primary-green); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; }
+        .btn-logout { color: #ef4444; border: 1.5px solid #fecaca; background: white; font-weight: 600; font-size: 0.85rem; padding: 8px 18px; border-radius: 10px; text-decoration: none; transition: 0.2s; display: inline-flex; align-items: center; gap: 7px; }
+        .btn-logout:hover { background: #fee2e2; border-color: #ef4444; color: #b91c1c; }
+
+        .dashboard-wrapper { max-width: 1250px; margin: 40px auto; padding: 0 30px; }
+        .greeting-title { font-size: 2.5rem; font-weight: 700; letter-spacing: -0.5px; }
+        .greeting-title span { color: var(--primary-green); font-style: italic; }
+
+        .goal-banner { background: #fffbeb; border: 1px solid #fef3c7; color: #92400e; padding: 15px 25px; border-radius: 16px; margin-bottom: 30px; display: flex; align-items: center; gap: 15px; font-weight: 500; }
+
+        .card-custom { background: white; border-radius: 24px; padding: 28px; border: 1px solid var(--border-soft); box-shadow: var(--card-shadow); transition: transform 0.25s, box-shadow 0.25s; }
+        .card-custom:hover { transform: translateY(-3px); box-shadow: 0 16px 30px rgba(0,0,0,0.07); }
+        .card-label { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1px; margin-bottom: 18px; display: flex; align-items: center; gap: 10px; }
+
+        /* ROW 1 */
+        .stats-grid-top { display: grid; grid-template-columns: 1fr 1.3fr 1fr; gap: 25px; margin-bottom: 25px; }
+
+        /* ════════════════════════════════════════════════
+           WATER TRACKER  —  REDESIGNED
+        ════════════════════════════════════════════════ */
+        .water-card {
+            background: linear-gradient(155deg, #0b2547 0%, #0d3568 45%, #0a4080 100%);
+            border-radius: 24px;
+            padding: 24px 22px 20px;
+            border: none;
+            box-shadow: 0 20px 45px rgba(8, 50, 110, 0.40);
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.25s, box-shadow 0.25s;
+        }
+        .water-card:hover { transform: translateY(-3px); box-shadow: 0 28px 55px rgba(8, 50, 110, 0.48); }
+
+        /* Radial glow overlay */
+        .water-card::before {
+            content: '';
+            position: absolute;
+            top: -40%;
+            left: -30%;
+            width: 160%;
+            height: 160%;
+            background: radial-gradient(ellipse at 40% 40%, rgba(56,189,248,0.10) 0%, transparent 65%);
+            animation: glowPulse 5s ease-in-out infinite;
+            pointer-events: none;
+        }
+        @keyframes glowPulse {
+            0%, 100% { opacity: 0.7; transform: scale(1); }
+            50%       { opacity: 1;   transform: scale(1.08); }
+        }
+
+        /* Floating bubbles */
+        .water-bubbles { position: absolute; inset: 0; pointer-events: none; overflow: hidden; border-radius: 24px; }
+        .bubble {
+            position: absolute;
+            bottom: -16px;
+            border-radius: 50%;
+            background: rgba(147,219,255,0.13);
+            animation: bubbleRise linear infinite;
+        }
+        .bubble:nth-child(1) { width:7px;  height:7px;  left:8%;  animation-duration:5.2s; animation-delay:0s;    }
+        .bubble:nth-child(2) { width:4px;  height:4px;  left:20%; animation-duration:7.1s; animation-delay:1.8s;  }
+        .bubble:nth-child(3) { width:9px;  height:9px;  left:36%; animation-duration:5.8s; animation-delay:0.6s;  }
+        .bubble:nth-child(4) { width:3px;  height:3px;  left:53%; animation-duration:8.3s; animation-delay:2.4s;  }
+        .bubble:nth-child(5) { width:6px;  height:6px;  left:68%; animation-duration:5.5s; animation-delay:0.2s;  }
+        .bubble:nth-child(6) { width:5px;  height:5px;  left:82%; animation-duration:9.0s; animation-delay:3.2s;  }
+        .bubble:nth-child(7) { width:8px;  height:8px;  left:46%; animation-duration:6.4s; animation-delay:1.1s;  }
+        .bubble:nth-child(8) { width:3px;  height:3px;  left:28%; animation-duration:7.8s; animation-delay:4.3s;  }
+        @keyframes bubbleRise {
+            0%   { transform: translateY(0) scale(1);    opacity: 0;   }
+            8%   { opacity: 0.9; }
+            88%  { opacity: 0.4; }
+            100% { transform: translateY(-290px) scale(0.5); opacity: 0; }
+        }
+
+        /* Card label on dark bg */
+        .water-card .wt-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: rgba(160,215,255,0.65);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 14px;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Count */
+        .wt-count-row {
+            display: flex;
+            align-items: flex-end;
+            gap: 6px;
+            margin-bottom: 2px;
+            position: relative;
+            z-index: 2;
+        }
+        .wt-num {
+            font-size: 3.6rem;
+            font-weight: 800;
+            color: #ffffff;
+            line-height: 1;
+            letter-spacing: -2px;
+            text-shadow: 0 0 28px rgba(100,200,255,0.55);
+        }
+        .wt-denom {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: rgba(140,205,255,0.60);
+            margin-bottom: 9px;
+        }
+        .wt-sub {
+            font-size: 0.71rem;
+            color: rgba(155,210,255,0.55);
+            font-weight: 500;
+            margin-bottom: 14px;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* ── Glass / Wave ── */
+        .wt-glass-wrap {
+            position: relative;
+            z-index: 2;
+            margin-bottom: 8px;
+        }
+        .wt-glass {
+            width: 100%;
+            height: 52px;
+            border: 1.5px solid rgba(100,185,255,0.22);
+            border-radius: 13px;
+            background: rgba(255,255,255,0.04);
+            position: relative;
+            overflow: hidden;
+        }
+        .wt-fill {
+            position: absolute;
+            bottom: 0; left: 0;
+            width: 100%;
+            height: 0%;
+            background: linear-gradient(180deg, rgba(56,189,248,0.82) 0%, rgba(2,132,199,0.96) 100%);
+            transition: height 0.65s cubic-bezier(0.34,1.4,0.64,1);
+            overflow: hidden;
+        }
+        /* Animated wave crest on fill */
+        .wt-wave-svg {
+            position: absolute;
+            top: -11px;
+            left: -10%;
+            width: 120%;
+            height: 22px;
+            animation: waveSway 2.2s linear infinite;
+        }
+        @keyframes waveSway {
+            0%   { transform: translateX(0); }
+            100% { transform: translateX(8.33%); }
+        }
+        /* Measurement ticks */
+        .wt-ticks {
+            position: absolute;
+            right: 9px; top: 4px; bottom: 4px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            pointer-events: none;
+        }
+        .wt-tick { width: 7px; height: 1px; background: rgba(150,210,255,0.28); border-radius: 1px; }
+
+        /* Goal line */
+        .wt-goal {
+            font-size: 0.66rem;
+            color: rgba(145,205,255,0.55);
+            text-align: center;
+            margin-bottom: 13px;
+            position: relative;
+            z-index: 2;
+        }
+        .wt-goal strong { color: rgba(195,230,255,0.85); }
+
+        /* +/- buttons */
+        .wt-btn-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 9px;
+            position: relative;
+            z-index: 2;
+        }
+        .wt-btn {
+            border: none;
+            border-radius: 11px;
+            padding: 9px 8px;
+            font-weight: 700;
+            font-size: 0.88rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            font-family: 'Poppins', sans-serif;
+        }
+        .wt-btn-minus {
+            background: rgba(255,255,255,0.07);
+            color: rgba(175,220,255,0.80);
+            border: 1.5px solid rgba(100,185,255,0.18);
+        }
+        .wt-btn-minus:hover { background: rgba(255,255,255,0.14); color: #fff; transform: scale(1.04); }
+        .wt-btn-plus {
+            background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%);
+            color: #fff;
+            box-shadow: 0 6px 18px rgba(14,165,233,0.48);
+        }
+        .wt-btn-plus:hover { background: linear-gradient(135deg, #7dd3fc, #38bdf8); transform: scale(1.04); box-shadow: 0 8px 22px rgba(14,165,233,0.58); }
+
+        /* Drop indicators */
+        .wt-drops {
+            display: flex;
+            justify-content: center;
+            gap: 4px;
+            margin-top: 12px;
+            position: relative;
+            z-index: 2;
+            flex-wrap: wrap;
+        }
+        .wt-drop {
+            width: 20px;
+            height: 26px;
+            transition: transform 0.3s;
+        }
+        .wt-drop svg { width: 100%; height: 100%; overflow: visible; }
+        .wt-drop.on  { transform: scale(1.15); }
+        .wt-drop.on  .dp-body { fill: #38bdf8; filter: drop-shadow(0 2px 5px rgba(56,189,248,0.75)); }
+        .wt-drop.off .dp-body { fill: rgba(90,150,210,0.18); }
+        .wt-drop.off .dp-shine { display: none; }
+
+        /* ── End Water Tracker ── */
+
+        /* BMI Gauge */
+        .gauge-wrapper { position: relative; width: 170px; height: 170px; margin: 0 auto; }
+        .gauge-svg { transform: rotate(-90deg); }
+        .gauge-bg   { fill: none; stroke: #f1f5f9; stroke-width: 14; }
+        .gauge-fill { fill: none; stroke: var(--primary-green); stroke-width: 14; stroke-linecap: round; stroke-dasharray: 471; stroke-dashoffset: 471; transition: stroke-dashoffset 1.5s ease; }
+        .gauge-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); text-align: center; width: 100%; }
+        .bmi-category-badge { display: inline-block; padding: 4px 14px; border-radius: 100px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 8px; }
+        .bmi-cat-underweight { background:#dbeafe; color:#1d4ed8; } .bmi-cat-normal { background:#dcfce7; color:#15803d; }
+        .bmi-cat-overweight  { background:#ffedd5; color:#c2410c; } .bmi-cat-obese  { background:#fee2e2; color:#b91c1c; }
+
+        /* NHRS */
+        .risk-score-big { font-size: 3.2rem; font-weight: 800; line-height: 1; }
+        .risk-bar-track { background: #f1f5f9; border-radius: 100px; height: 8px; margin: 12px 0 6px; overflow: hidden; }
+        .risk-bar-fill  { height: 100%; border-radius: 100px; transition: width 1.5s ease; width: 0%; }
+        .risk-pill      { display: inline-block; padding: 3px 12px; border-radius: 100px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; margin-top: 6px; }
+
+        /* ROW 2 — 4 metric cards */
+        .stats-grid-mid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 25px; }
+        .metric-card { background: white; border-radius: 20px; padding: 22px 18px; border: 1px solid var(--border-soft); box-shadow: var(--card-shadow); transition: transform 0.25s; }
+        .metric-card:hover { transform: translateY(-3px); }
+        .metric-icon { width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; margin-bottom: 14px; }
+        .metric-val  { font-size: 1.7rem; font-weight: 800; color: var(--text-dark); line-height: 1; }
+        .metric-unit { font-size: 0.7rem; color: var(--text-muted); font-weight: 600; }
+        .metric-lbl  { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; margin-top: 6px; }
+
+        /* ROW 3 */
+        .stats-grid-bot { display: grid; grid-template-columns: 1.6fr 1fr 1fr; gap: 25px; margin-bottom: 25px; }
+
+        /* Heatmap */
+        .heatmap-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; margin-top: 14px; }
+        .heatmap-day { text-align: center; background: #f8fafc; border-radius: 12px; padding: 10px 4px; border: 1px solid var(--border-soft); transition: 0.3s; }
+        .heatmap-day.success { background: #dcfce7; border-color: #bbf7d0; }
+        .day-label { font-size: 0.65rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 5px; }
+        .day-icon  { font-size: 0.85rem; color: #cbd5e1; }
+        .heatmap-day.success .day-icon { color: #22c55e; }
+
+        /* Condition badge */
+        .condition-badge { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 12px; font-size: 0.82rem; font-weight: 700; margin-top: 10px; }
+        .cond-none { background:#dcfce7; color:#15803d; } .cond-diabetes { background:#fef9c3; color:#a16207; }
+        .cond-bp   { background:#fee2e2; color:#b91c1c; } .cond-heart    { background:#fee2e2; color:#b91c1c; }
+        .cond-thyroid { background:#dbeafe; color:#1d4ed8; } .cond-pcod { background:#f3e8ff; color:#7c3aed; }
+        .cond-other   { background:#f1f5f9; color:#475569; }
+
+        /* Info rows */
+        .info-row { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 12px; background: #f8fafc; border: 1px solid var(--border-soft); margin-bottom: 10px; font-size: 0.82rem; font-weight: 500; }
+        .info-dot  { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+        /* Quick action buttons */
+        .btn-quick { display: flex; align-items: center; gap: 10px; padding: 12px 18px; border-radius: 14px; text-decoration: none; font-weight: 600; font-size: 0.85rem; border: none; transition: 0.25s; width: 100%; margin-bottom: 10px; }
+        .btn-quick:last-child { margin-bottom: 0; }
+        .btn-quick-green  { background:#dcfce7; color:#15803d; } .btn-quick-green:hover  { background:#22c55e; color:white; }
+        .btn-quick-blue   { background:#dbeafe; color:#1d4ed8; } .btn-quick-blue:hover   { background:#3b82f6; color:white; }
+        .btn-quick-purple { background:#f3e8ff; color:#7c3aed; } .btn-quick-purple:hover { background:#7c3aed; color:white; }
+
+        .insight-card { background: linear-gradient(to bottom right, #ffffff, #f0fdf4); border-left: 5px solid var(--primary-green); }
+
+        footer { text-align: center; padding: 40px 0; color: var(--text-muted); font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+<!-- NAVBAR (unchanged) -->
+<nav class="navbar-custom d-flex justify-content-between align-items-center">
+    <div class="d-flex align-items-center">
+        <div class="logo-box me-2"><i class="fa-solid fa-leaf"></i></div>
+        <span class="fw-bold fs-4">NutriLogic</span>
+        <div class="nav-links-wrapper d-none d-lg-flex">
+            <a href="/home"          class="nav-link-custom active"><i class="fa-solid fa-house"></i> Dashboard</a>
+            <a href="/healthprofile" class="nav-link-custom"><i class="fa-solid fa-magnifying-glass-chart"></i> Analyze</a>
+            <a href="/history"       class="nav-link-custom"><i class="fa-solid fa-timeline"></i> History</a>
+            <a href="/recipes"       class="nav-link-custom"><i class="fa-solid fa-bowl-food"></i> Recipes</a>
+            <a href="/articles"      class="nav-link-custom"><i class="fa-solid fa-newspaper"></i> Articles</a>
+        </div>
+    </div>
+    <div class="d-flex align-items-center" style="gap:20px;">
+        <div class="user-chip d-none d-sm-flex">
+            <div class="avatar-circle" th:text="${#strings.substring(username,0,1).toUpperCase()}">U</div>
+            <span th:text="${username}">User</span>
+        </div>
+        <a th:href="@{/logout}" class="btn-logout"><i class="fa-solid fa-power-off"></i> Logout</a>
+    </div>
+</nav>
+
+<div class="dashboard-wrapper">
+
+    <div class="mb-3">
+        <p class="text-muted fw-500 mb-0">Overview</p>
+        <h1 class="greeting-title">Welcome back, <span th:text="${username}">User</span></h1>
+    </div>
+
+    <div class="goal-banner">
+        <div class="fs-4 text-warning"><i class="fa-solid fa-bolt-lightning"></i></div>
+        <span>Keep it up! Consistently tracking your BMI and Hydration leads to <strong>40% better results</strong> in health goals.</span>
+    </div>
+
+    <!-- ═══════ ROW 1 — Water | BMI Gauge | NHRS ═══════ -->
+    <div class="stats-grid-top">
+
+        <!-- ══════════════════════════════════════
+             WATER TRACKER — REDESIGNED
+        ══════════════════════════════════════ -->
+        <div class="water-card">
+
+            <!-- Floating bubbles background -->
+            <div class="water-bubbles">
+                <div class="bubble"></div><div class="bubble"></div>
+                <div class="bubble"></div><div class="bubble"></div>
+                <div class="bubble"></div><div class="bubble"></div>
+                <div class="bubble"></div><div class="bubble"></div>
+            </div>
+
+            <!-- Label -->
+            <div class="wt-label">
+                <i class="fa-solid fa-droplet" style="color:#38bdf8;"></i>
+                Water Tracker
+            </div>
+
+            <!-- Big count -->
+            <div class="wt-count-row">
+                <span class="wt-num" id="waterCount" th:text="${user != null ? user.waterCount : 0}">0</span>
+                <span class="wt-denom">/ 8</span>
+            </div>
+            <div class="wt-sub">glasses consumed today</div>
+
+            <!-- Animated glass with wave fill -->
+            <div class="wt-glass-wrap">
+                <div class="wt-glass">
+                    <div class="wt-fill" id="waterFill">
+                        <svg class="wt-wave-svg" viewBox="0 0 120 22"
+                             preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M0,11 C15,4 30,18 45,11 C60,4 75,18 90,11 C105,4 120,18 120,11 L120,22 L0,22 Z"
+                                  fill="rgba(125,211,252,0.50)"/>
+                        </svg>
+                    </div>
+                    <!-- Ruler ticks -->
+                    <div class="wt-ticks">
+                        <div class="wt-tick"></div>
+                        <div class="wt-tick"></div>
+                        <div class="wt-tick"></div>
+                        <div class="wt-tick"></div>
+                        <div class="wt-tick"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Goal info -->
+            <div class="wt-goal" th:if="${latestWaterGoalMl != null and latestWaterGoalMl > 0}">
+                🎯 Daily goal: <strong th:text="${latestWaterGoalMl} + ' ml (' + ${latestWaterGoalGlasses} + ' glasses)'">2400 ml</strong>
+            </div>
+            <div class="wt-goal" th:if="${latestWaterGoalMl == null or latestWaterGoalMl == 0}">
+                <i class="fa-solid fa-circle-info me-1"></i> Analyze profile for personalized goal
+            </div>
+
+            <!-- Buttons -->
+            <div class="wt-btn-row">
+                <button class="wt-btn wt-btn-minus" onclick="updateWater(-1)">
+                    <i class="fa-solid fa-minus"></i> Remove
+                </button>
+                <button class="wt-btn wt-btn-plus" onclick="updateWater(1)">
+                    <i class="fa-solid fa-plus"></i> Add
+                </button>
+            </div>
+
+            <!-- 8 drop icons -->
+            <div class="wt-drops" id="dropRow"></div>
+        </div>
+
+        <!-- BMI Gauge (unchanged) -->
+        <div class="card-custom text-center">
+            <div class="card-label justify-content-center"><i class="fa-solid fa-gauge text-success"></i> Health Index</div>
+            <div class="gauge-wrapper">
+                <svg class="gauge-svg" width="170" height="170">
+                    <circle class="gauge-bg"   cx="85" cy="85" r="75"></circle>
+                    <circle id="bmiGauge" class="gauge-fill" cx="85" cy="85" r="75"></circle>
+                </svg>
+                <div class="gauge-text">
+                    <h2 class="fw-bold m-0 fs-1" th:text="${latestBmi}">--</h2>
+                    <p class="text-muted small mb-0">Latest BMI</p>
+                </div>
+            </div>
+            <div id="bmiCategoryBadge" class="mt-2"></div>
+            <a href="/healthprofile" class="btn btn-success rounded-pill mt-3 px-4 py-2 small fw-bold">
+                <i class="fa-solid fa-plus me-1"></i> New Analysis
+            </a>
+        </div>
+
+        <!-- NHRS Health Risk Score (unchanged) -->
+        <div class="card-custom">
+            <div class="card-label">
+                <i class="fa-solid fa-shield-heart"
+                   th:style="${latestRiskColor == 'success'} ? 'color:#22c55e' : (${latestRiskColor == 'warning'} ? 'color:#f59e0b' : 'color:#ef4444')">
+                </i>
+                Health Risk Score
+            </div>
+            <div th:if="${latestRiskScore != null and latestRiskScore > 0}">
+                <div class="risk-score-big"
+                     th:classappend="${latestRiskColor == 'success'} ? 'text-success' : (${latestRiskColor == 'warning'} ? 'text-warning' : 'text-danger')"
+                     th:text="${latestRiskScore}">0</div>
+                <div class="text-muted small">out of 100</div>
+                <div class="risk-bar-track">
+                    <div class="risk-bar-fill" id="riskBarHome"
+                         th:classappend="${latestRiskColor == 'success'} ? 'bg-success' : (${latestRiskColor == 'warning'} ? 'bg-warning' : 'bg-danger')">
+                    </div>
+                </div>
+                <div class="risk-pill"
+                     th:classappend="${latestRiskColor == 'success'} ? 'bg-success text-white' : (${latestRiskColor == 'warning'} ? 'bg-warning text-dark' : 'bg-danger text-white')"
+                     th:text="${latestRiskLevel}">Low Risk</div>
+                <p class="text-muted mt-2 mb-0" style="font-size:0.68rem;">
+                    NHRS = BMI(35%) + Sleep(20%) + Condition(30%) + Age(15%)
+                </p>
+            </div>
+            <div th:if="${latestRiskScore == null or latestRiskScore == 0}">
+                <div class="risk-score-big text-muted">--</div>
+                <p class="text-muted small mt-2 mb-3">Complete your health profile to calculate your risk score.</p>
+                <a href="/healthprofile" class="btn btn-outline-success btn-sm rounded-pill">Analyze Now</a>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ═══════ ROW 2 — 4 Metric Cards (unchanged) ═══════ -->
+    <div class="stats-grid-mid">
+        <div class="metric-card">
+            <div class="metric-icon" style="background:#dcfce7;color:#16a34a;"><i class="fa-solid fa-fire"></i></div>
+            <div class="metric-val" th:text="${latestBmr != null and latestBmr > 0} ? ${latestBmr} : '--'">--</div>
+            <div class="metric-unit">kcal / day</div>
+            <div class="metric-lbl">Basal Metabolic Rate</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-icon" style="background:#ffedd5;color:#ea580c;"><i class="fa-solid fa-bolt"></i></div>
+            <div class="metric-val" th:text="${latestCalorieNeed != null and latestCalorieNeed > 0} ? ${latestCalorieNeed} : '--'">--</div>
+            <div class="metric-unit">kcal / day</div>
+            <div class="metric-lbl">Daily Calorie Need</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-icon" style="background:#dbeafe;color:#1d4ed8;"><i class="fa-solid fa-weight-scale"></i></div>
+            <div class="metric-val" th:text="${latestIdealWeight != null and latestIdealWeight > 0} ? ${latestIdealWeight} : '--'">--</div>
+            <div class="metric-unit">kg</div>
+            <div class="metric-lbl">Ideal Weight (Devine)</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-icon" style="background:#f3e8ff;color:#7c3aed;"><i class="fa-solid fa-moon"></i></div>
+            <div class="metric-val" th:text="${latestSleepHours != null and latestSleepHours > 0} ? ${latestSleepHours} : '--'">--</div>
+            <div class="metric-unit">hours / night</div>
+            <div class="metric-lbl">Sleep Duration</div>
+        </div>
+    </div>
+
+    <!-- ═══════ ROW 3 — Heatmap | Health Profile | Quick Actions (unchanged) ═══════ -->
+    <div class="stats-grid-bot">
+
+        <!-- 7-Day Hydration Heatmap -->
+        <div class="card-custom">
+            <div class="card-label"><i class="fa-solid fa-calendar-days text-primary"></i> 7-Day Hydration Streak</div>
+            <p class="small text-muted mb-2">Your consistency over the last week. Target: 8 Glasses/Day.</p>
+            <div class="heatmap-grid">
+                <div class="heatmap-day success"><span class="day-label">MON</span><i class="fa-solid fa-circle-check day-icon"></i></div>
+                <div class="heatmap-day success"><span class="day-label">TUE</span><i class="fa-solid fa-circle-check day-icon"></i></div>
+                <div class="heatmap-day"><span class="day-label">WED</span><i class="fa-solid fa-circle day-icon"></i></div>
+                <div class="heatmap-day success"><span class="day-label">THU</span><i class="fa-solid fa-circle-check day-icon"></i></div>
+                <div class="heatmap-day success"><span class="day-label">FRI</span><i class="fa-solid fa-circle-check day-icon"></i></div>
+                <div class="heatmap-day"><span class="day-label">SAT</span><i class="fa-solid fa-circle day-icon"></i></div>
+                <div class="heatmap-day" id="todayHeatmap"><span class="day-label">SUN</span><i class="fa-solid fa-circle day-icon"></i></div>
+            </div>
+        </div>
+
+        <!-- Medical Condition + Lifestyle Info -->
+        <div class="card-custom">
+            <div class="card-label"><i class="fa-solid fa-notes-medical text-danger"></i> Health Profile</div>
+            <div class="mb-3">
+                <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:6px;">Medical Condition</div>
+                <div class="condition-badge cond-none"     th:if="${latestCondition == null or latestCondition == 'None'}"><i class="fa-solid fa-circle-check"></i> No Condition</div>
+                <div class="condition-badge cond-diabetes" th:if="${latestCondition == 'Diabetes'}"><i class="fa-solid fa-syringe"></i> Diabetes</div>
+                <div class="condition-badge cond-bp"       th:if="${latestCondition == 'BloodPressure'}"><i class="fa-solid fa-heart-pulse"></i> Blood Pressure</div>
+                <div class="condition-badge cond-heart"    th:if="${latestCondition == 'HeartDisease'}"><i class="fa-solid fa-heart"></i> Heart Disease</div>
+                <div class="condition-badge cond-thyroid"  th:if="${latestCondition == 'Thyroid'}"><i class="fa-solid fa-stethoscope"></i> Thyroid</div>
+                <div class="condition-badge cond-pcod"     th:if="${latestCondition == 'PCOD'}"><i class="fa-solid fa-venus"></i> PCOD</div>
+                <div class="condition-badge cond-other"    th:if="${latestCondition == 'Other'}"><i class="fa-solid fa-notes-medical"></i> Other</div>
+            </div>
+            <div class="info-row" th:if="${latestSleepHours != null and latestSleepHours > 0}">
+                <div class="info-dot" th:style="${latestSleepHours >= 7} ? 'background:#22c55e' : 'background:#f59e0b'"></div>
+                <span>Sleep: <strong th:text="${latestSleepHours} + ' hrs'">7 hrs</strong>
+                    <span class="text-success small" th:if="${latestSleepHours >= 7}"> ✓ Good</span>
+                    <span class="text-warning small" th:if="${latestSleepHours < 7}"> ⚠ Low</span>
+                </span>
+            </div>
+            <div class="info-row" th:if="${latestStressLevel != null}">
+                <div class="info-dot" th:style="${latestStressLevel == 'High'} ? 'background:#ef4444' : (${latestStressLevel == 'Medium'} ? 'background:#f59e0b' : 'background:#22c55e')"></div>
+                <span>Stress: <strong th:text="${latestStressLevel}">Low</strong></span>
+            </div>
+            <div class="info-row" th:if="${latestActivityLevel != null}">
+                <div class="info-dot" style="background:#6366f1;"></div>
+                <span>Activity: <strong th:text="${latestActivityLevel}">Sedentary</strong></span>
+            </div>
+        </div>
+
+        <!-- Quick Actions + Health Tip -->
+        <div class="card-custom insight-card">
+            <div class="card-label"><i class="fa-solid fa-wand-magic-sparkles text-success"></i> Quick Actions</div>
+            <a href="/healthprofile" class="btn-quick btn-quick-green"><i class="fa-solid fa-magnifying-glass-chart"></i> New Analysis</a>
+            <a href="/recipes"       class="btn-quick btn-quick-blue"><i class="fa-solid fa-bowl-food"></i> View Meal Plan</a>
+            <a href="/history"       class="btn-quick btn-quick-purple"><i class="fa-solid fa-timeline"></i> View History</a>
+            <hr class="my-3 opacity-25">
+            <div class="card-label mb-2"><i class="fa-solid fa-lightbulb text-warning"></i> Health Tip</div>
+            <p class="small text-muted mb-0">
+                Based on your BMI of <strong th:text="${latestBmi}">--</strong>,
+                <span th:if="${latestCondition != null and latestCondition != 'None'}">
+                    your <span th:text="${latestCondition}"></span> condition needs special attention.
+                </span>
+                <span th:if="${latestCondition == null or latestCondition == 'None'}">
+                    focus on your daily calorie goal.
+                </span>
+                <a href="/recipes" class="text-success fw-bold text-decoration-none">See meal plan →</a>
+            </p>
+        </div>
+
+    </div>
+</div>
+
+<footer>
+    <p>© 2026 NutriLogic • Smart Health Intelligence<br>❤️ Developed by Sagar Nagnath Kale</p>
+</footer>
+
+<input type="hidden" id="csrfToken" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}"/>
+
+<script th:inline="javascript">
+    const MAX_GLASSES = 8;
+
+    // ── Render 8 SVG water drop indicators ────────────────────────────
+    function renderDrops(n) {
+        const row = document.getElementById('dropRow');
+        if (!row) return;
+        row.innerHTML = '';
+        for (let i = 0; i < MAX_GLASSES; i++) {
+            const d = document.createElement('div');
+            d.className = 'wt-drop ' + (i < n ? 'on' : 'off');
+            d.innerHTML = `
+                <svg viewBox="0 0 22 28" xmlns="http://www.w3.org/2000/svg">
+                    <path class="dp-body"
+                          d="M11,2 C11,2 3,12 3,18.5 A8,8 0 0,0 19,18.5 C19,12 11,2 11,2 Z"
+                          style="transition:fill 0.35s;"/>
+                    <ellipse class="dp-shine"
+                             cx="8.2" cy="15.5" rx="1.9" ry="3.2"
+                             fill="rgba(255,255,255,0.38)"
+                             transform="rotate(-18,8.2,15.5)"/>
+                </svg>`;
+            row.appendChild(d);
+        }
+        // Sync today heatmap cell
+        const todayBox = document.getElementById('todayHeatmap');
+        if (todayBox) {
+            if (n >= MAX_GLASSES) {
+                todayBox.classList.add('success');
+                todayBox.querySelector('.day-icon').className = 'fa-solid fa-circle-check day-icon';
+            } else {
+                todayBox.classList.remove('success');
+                todayBox.querySelector('.day-icon').className = 'fa-solid fa-circle day-icon';
+            }
+        }
+    }
+
+    // ── Animate the wave-fill bar height + colour ──────────────────────
+    function updateWaveFill(n) {
+        const fill = document.getElementById('waterFill');
+        if (!fill) return;
+        const pct = Math.round((n / MAX_GLASSES) * 100);
+        fill.style.height = pct + '%';
+        if      (pct === 0)  fill.style.background = 'transparent';
+        else if (pct <= 37)  fill.style.background = 'linear-gradient(180deg,rgba(56,189,248,0.80) 0%,rgba(2,132,199,0.92) 100%)';
+        else if (pct <= 75)  fill.style.background = 'linear-gradient(180deg,rgba(56,189,248,0.88) 0%,rgba(3,105,161,0.96) 100%)';
+        else                 fill.style.background = 'linear-gradient(180deg,rgba(125,211,252,0.92) 0%,rgba(2,132,199,1.00) 100%)';
+    }
+
+    // ── Handle +/- button clicks ───────────────────────────────────────
+    function updateWater(val) {
+        const display  = document.getElementById('waterCount');
+        let newCount   = Math.max(0, Math.min(MAX_GLASSES, (parseInt(display.innerText) || 0) + val));
+        display.innerText = newCount;
+        renderDrops(newCount);
+        updateWaveFill(newCount);
+
+        const token = document.getElementById('csrfToken').value;
+        const body  = new URLSearchParams();
+        body.append('count', newCount);
+        fetch('/updateWater', {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': token, 'Content-Type': 'application/x-www-form-urlencoded' },
+            body
+        }).catch(err => console.error('Water sync error:', err));
+    }
+
+    // ── Page load ──────────────────────────────────────────────────────
+    document.addEventListener("DOMContentLoaded", () => {
+
+        // Initialise water tracker
+        const initial = parseInt(document.getElementById('waterCount').innerText) || 0;
+        renderDrops(initial);
+        updateWaveFill(initial);
+
+        // ── BMI Gauge ──────────────────────────────────────────────────
+        const bmiValue = parseFloat(/*[[${latestBmi}]]*/ '0');
+        if (!isNaN(bmiValue) && bmiValue > 0) {
+            const circumference = 2 * Math.PI * 75;
+            const gauge = document.getElementById('bmiGauge');
+            gauge.style.strokeDasharray  = circumference;
+            gauge.style.strokeDashoffset = circumference;
+            setTimeout(() => {
+                gauge.style.strokeDashoffset = circumference - (Math.min(bmiValue / 40, 1) * circumference);
+            }, 300);
+
+            // ✅ FIXED: WHO boundaries — 25.0 and 30.0  (was 24.9 and 29.9 — bug)
+            const badge = document.getElementById('bmiCategoryBadge');
+            let label, cls;
+            if      (bmiValue < 18.5) { label = 'Underweight';  cls = 'bmi-cat-underweight'; }
+            else if (bmiValue < 25.0) { label = 'Normal Weight'; cls = 'bmi-cat-normal';      }
+            else if (bmiValue < 30.0) { label = 'Overweight';   cls = 'bmi-cat-overweight';  }
+            else                      { label = 'Obese';         cls = 'bmi-cat-obese';       }
+            badge.innerHTML = '<span class="bmi-category-badge ' + cls + '">' + label + '</span>';
+        }
+
+        // ── NHRS Risk Bar ──────────────────────────────────────────────
+        const riskScore = /*[[${latestRiskScore}]]*/ 0;
+        const riskBar   = document.getElementById('riskBarHome');
+        if (riskBar && riskScore > 0) {
+            setTimeout(() => { riskBar.style.width = riskScore + '%'; }, 400);
+        }
+    });
+</script>
+</body>
+</html>

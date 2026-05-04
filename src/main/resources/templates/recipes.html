@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>NutriLogic | 7-Day Meal Plan</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"/>
+
+    <style>
+        :root {
+            --primary: #22c55e;
+            --primary-dark: #16a34a;
+            --bg-soft: #f0fdf4;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --white: #ffffff;
+        }
+        body { font-family: 'Poppins', sans-serif; background: var(--bg-soft); color: var(--text-main); min-height: 100vh; }
+
+        .top-nav {
+            background: var(--white);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0.8rem 2rem;
+            position: sticky; top: 0; z-index: 1000;
+        }
+        .navbar-brand {
+            font-weight: 700; color: var(--primary) !important;
+            text-decoration: none; display: flex; align-items: center; gap: 10px;
+        }
+
+        .hero-strip {
+            background: linear-gradient(135deg, #064e3b 0%, #059669 100%);
+            padding: 50px 20px; text-align: center; color: white;
+            margin-bottom: 40px; position: relative; overflow: hidden;
+        }
+        .hero-strip::before {
+            content:''; position: absolute; inset:0;
+            background-image: radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1px);
+            background-size: 26px 26px; pointer-events: none;
+        }
+        .hero-strip .container { position: relative; z-index: 1; }
+        .hero-title { font-weight: 700; font-size: 2.2rem; margin-bottom: 8px; }
+        .hero-sub { opacity: 0.8; font-size: 0.9rem; }
+
+        .user-bar {
+            background: white; border: 1px solid var(--border-color);
+            border-radius: 16px; padding: 14px 22px;
+            margin-bottom: 28px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+        }
+        .user-pill {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0;
+            padding: 5px 13px; border-radius: 100px; font-size: 0.75rem; font-weight: 600;
+        }
+        .user-pill.orange { background:#fff7ed; color:#c2410c; border-color:#fed7aa; }
+        .user-pill.blue   { background:#eff6ff; color:#1d4ed8; border-color:#bfdbfe; }
+        .user-pill.purple { background:#faf5ff; color:#7c3aed; border-color:#e9d5ff; }
+        .user-pill.red    { background:#fff5f5; color:#b91c1c; border-color:#fecaca; }
+
+        .day-tabs {
+            display: flex; gap: 10px; flex-wrap: wrap;
+            margin-bottom: 24px;
+            background: white; padding: 10px 16px;
+            border-radius: 18px; border: 1px solid var(--border-color);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+        .day-tab {
+            padding: 9px 24px; border-radius: 12px;
+            border: 1.5px solid var(--border-color);
+            background: #f8fafc; color: var(--text-muted);
+            font-size: 0.85rem; font-weight: 600;
+            cursor: pointer; transition: 0.2s; flex: 1; text-align: center;
+        }
+        .day-tab:hover  { border-color: var(--primary); color: var(--primary); background: #f0fdf4; }
+        .day-tab.active {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white; border-color: transparent;
+            box-shadow: 0 6px 18px rgba(34,197,94,0.3);
+        }
+
+        .daily-summary {
+            background: white; border: 1px solid var(--border-color);
+            border-radius: 18px; padding: 18px 26px;
+            margin-bottom: 24px;
+            display: flex; flex-wrap: wrap; align-items: center;
+            justify-content: space-around; gap: 12px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+        }
+        .daily-macro { text-align: center; min-width: 70px; }
+        .daily-macro .val {
+            font-size: 1.4rem; font-weight: 800; color: var(--text-main);
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .daily-macro .lbl { font-size: 0.64rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
+
+        .meal-heading {
+            display: flex; align-items: center; gap: 16px;
+            margin-bottom: 20px; margin-top: 40px;
+            padding: 16px 22px;
+            background: linear-gradient(to right, #f0fdf4, #ffffff);
+            border-radius: 18px;
+            border: 1px solid #dcfce7;
+            border-left: 5px solid var(--primary);
+            box-shadow: 0 4px 12px rgba(34,197,94,0.07);
+        }
+        .meal-badge {
+            width: 46px; height: 46px; border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem; flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        }
+        .meal-title { font-weight: 700; font-size: 1.1rem; margin-bottom: 2px; color: #1e293b; }
+        .meal-sub   { font-size: 0.72rem; color: var(--text-muted); font-weight: 500; }
+
+        /* ══════════════════════════════════
+           RECIPE CARD — Horizontal Professional Style
+           2 cards per row, banner LEFT + content RIGHT
+        ══════════════════════════════════ */
+        .recipe-card {
+            background: white;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: row;   /* ← HORIZONTAL layout */
+            box-shadow: 0 4px 18px rgba(0,0,0,0.05);
+            min-height: 200px;
+        }
+        .recipe-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 22px 45px rgba(34,197,94,0.14);
+            border-color: var(--primary);
+        }
+
+        /* LEFT — coloured gradient panel */
+        .recipe-banner {
+            position: relative;
+            width: 160px;
+            min-width: 160px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 18px 10px;
+            overflow: hidden;
+            background: linear-gradient(160deg, #22c55e, #16a34a); /* JS overrides */
+            flex-shrink: 0;
+        }
+        .recipe-banner::before {
+            content: '';
+            position: absolute; inset: 0;
+            background-image: radial-gradient(rgba(255,255,255,0.13) 1px, transparent 1px);
+            background-size: 18px 18px;
+        }
+        /* wavy right edge on banner */
+        .recipe-banner::after {
+            content: '';
+            position: absolute;
+            top: 0; right: -1px; bottom: 0;
+            width: 28px;
+            background: white;
+            clip-path: ellipse(100% 50% at 100% 50%);
+        }
+        .recipe-emoji {
+            font-size: 2.8rem;
+            margin-bottom: 8px;
+            filter: drop-shadow(0 4px 10px rgba(0,0,0,0.25));
+            position: relative; z-index: 1;
+        }
+        .recipe-banner-name {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: white;
+            text-align: center;
+            text-shadow: 0 1px 5px rgba(0,0,0,0.35);
+            position: relative; z-index: 1;
+            line-height: 1.35;
+        }
+        .cal-badge-banner {
+            position: absolute; bottom: 10px; left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255,255,255,0.93);
+            padding: 3px 10px; border-radius: 100px;
+            font-weight: 700; font-size: 0.68rem;
+            color: #15803d; white-space: nowrap;
+            display: flex; align-items: center; gap: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+            z-index: 2;
+        }
+        .condition-tag-banner {
+            position: absolute; top: 10px; left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255,255,255,0.93);
+            padding: 2px 9px; border-radius: 100px;
+            font-weight: 700; font-size: 0.58rem;
+            color: #7c3aed; border: 1px solid rgba(196,181,253,0.7);
+            white-space: nowrap;
+            z-index: 2;
+        }
+
+        /* RIGHT — card body content */
+        .recipe-body {
+            padding: 16px 18px;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-width: 0; /* prevent overflow */
+        }
+        .recipe-body-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+        .recipe-name {
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: #1e293b;
+            line-height: 1.3;
+        }
+        .recipe-desc {
+            font-size: 0.73rem;
+            color: var(--text-muted);
+            line-height: 1.55;
+            margin-bottom: 10px;
+        }
+
+        /* Macro row — horizontal inside card body */
+        .nutrition-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+            margin-top: auto;
+            padding-top: 10px;
+        }
+        .macro-box {
+            padding: 8px 5px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid transparent;
+            transition: 0.2s;
+        }
+        .macro-protein { background: #f0fdf4; border-color: #bbf7d0; }
+        .macro-carbs   { background: #fff7ed; border-color: #fed7aa; }
+        .macro-fats    { background: #faf5ff; border-color: #e9d5ff; }
+        .macro-protein:hover { background: #dcfce7; }
+        .macro-carbs:hover   { background: #ffedd5; }
+        .macro-fats:hover    { background: #f3e8ff; }
+        .macro-val { display: block; font-weight: 800; font-size: 0.9rem; }
+        .macro-protein .macro-val { color: #15803d; }
+        .macro-carbs   .macro-val { color: #c2410c; }
+        .macro-fats    .macro-val { color: #7c3aed; }
+        .macro-lbl { font-size: 0.58rem; color: var(--text-muted); margin-top: 2px; display: block; font-weight: 600; }
+
+        /* ════════════════════════
+           DROPDOWN — Ingredients & Preparation
+        ═══════════════════════════ */
+        details.recipe-dropdown { margin-top: 8px; }
+        details.recipe-dropdown summary {
+            list-style: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 9px 13px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-main);
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            transition: background 0.2s, border-color 0.2s;
+            user-select: none;
+        }
+        details.recipe-dropdown summary::-webkit-details-marker { display: none; }
+        details.recipe-dropdown summary:hover {
+            background: #f0fdf4;
+            border-color: var(--primary);
+            color: var(--primary-dark);
+        }
+        details.recipe-dropdown[open] > summary {
+            background: #f0fdf4;
+            border-color: var(--primary);
+            color: var(--primary-dark);
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+            border-bottom: none;
+        }
+        .dropdown-arrow { transition: transform 0.25s; font-size: 0.7rem; color: var(--text-muted); }
+        details.recipe-dropdown[open] .dropdown-arrow { transform: rotate(180deg); }
+
+        .dropdown-body {
+            background: #f8fafc;
+            border: 1px solid var(--primary);
+            border-top: none;
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+            padding: 12px 14px;
+            font-size: 0.78rem;
+            animation: slideDown 0.2s ease;
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-4px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .dropdown-body ul,
+        .dropdown-body ol { margin: 0; padding-left: 18px; color: var(--text-muted); }
+        .dropdown-body li  { margin-bottom: 4px; line-height: 1.5; }
+
+        .btn-action {
+            padding: 9px 18px; border-radius: 10px; font-weight: 600;
+            transition: 0.3s; font-size: 0.82rem; text-decoration: none; cursor: pointer;
+        }
+        .btn-download {
+            background: var(--white); color: var(--text-main); border: 1px solid var(--border-color);
+        }
+        .btn-download:hover { background: var(--primary); color: white; border-color: var(--primary); }
+
+        .day-panel { display: none; }
+        .day-panel.active { display: block; }
+
+        @media print {
+            .top-nav, .btn-action, .day-tabs { display: none !important; }
+            .day-panel { display: block !important; }
+            .recipe-card { break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="top-nav d-flex justify-content-between align-items-center">
+    <a class="navbar-brand" th:href="@{/}">
+        <i class="fa-solid fa-leaf"></i> NutriLogic
+    </a>
+    <div class="d-flex gap-2">
+        <button onclick="window.print()" class="btn-action btn-download">
+            <i class="fa-solid fa-file-pdf me-1"></i> Save PDF
+        </button>
+        <a th:href="@{/}" class="btn-action btn-download">
+            <i class="fa-solid fa-arrow-left me-1"></i> Dashboard
+        </a>
+    </div>
+</nav>
+
+<div class="hero-strip">
+    <div class="container">
+        <h1 class="hero-title"><i class="fa-solid fa-calendar-week me-2"></i>7-Day Smart Meal Plan</h1>
+        <p class="hero-sub">Personalized for your health profile, medical condition and activity level.</p>
+    </div>
+</div>
+
+<main class="container mb-5">
+
+    <!-- USER PILLS -->
+    <div class="user-bar">
+        <span style="font-weight:700;font-size:0.85rem;color:var(--text-main);">
+            <i class="fa-solid fa-user-circle text-success me-1"></i> Your Plan:
+        </span>
+        <span class="user-pill"        th:if="${goal != null}"      th:text="'Goal: ' + ${goal}"></span>
+        <span class="user-pill orange" th:if="${condition != null}" th:text="'Condition: ' + ${condition}"></span>
+        <span class="user-pill blue"   th:if="${activity != null}"  th:text="'Activity: ' + ${activity}"></span>
+        <span class="user-pill purple" th:if="${sleepInfo != null}" th:text="'Sleep: ' + ${sleepInfo}"></span>
+        <span class="user-pill red"    th:if="${stressInfo != null}" th:text="'Stress: ' + ${stressInfo}"></span>
+    </div>
+
+    <div th:if="${mealPlan != null and not #maps.isEmpty(mealPlan)}">
+
+        <!-- DAY TABS -->
+        <div class="day-tabs">
+            <button class="day-tab active" onclick="showDay('day1',this)">Mon</button>
+            <button class="day-tab"        onclick="showDay('day2',this)">Tue</button>
+            <button class="day-tab"        onclick="showDay('day3',this)">Wed</button>
+            <button class="day-tab"        onclick="showDay('day4',this)">Thu</button>
+            <button class="day-tab"        onclick="showDay('day5',this)">Fri</button>
+            <button class="day-tab"        onclick="showDay('day6',this)">Sat</button>
+            <button class="day-tab"        onclick="showDay('day7',this)">Sun</button>
+        </div>
+
+        <!-- ══════ DAY 1 ══════ -->
+        <div id="day1" class="day-panel active">
+            <div th:if="${mealPlan['day1'] != null}" th:with="dp=${mealPlan['day1']}">
+
+                <div class="d-flex align-items-center gap-3 mb-3 flex-wrap">
+                    <div style="background:var(--primary);color:white;padding:6px 20px;border-radius:100px;font-weight:700;font-size:0.9rem;" th:text="${dp.dayLabel}">Monday</div>
+                    <div class="text-muted small"><i class="fa-solid fa-fire text-danger me-1"></i><span th:text="${dp.totalCalories} + ' kcal total'"></span></div>
+                </div>
+                <div class="daily-summary">
+                    <div class="daily-macro"><div class="val" th:text="${dp.totalCalories}">0</div><div class="lbl">kcal</div></div>
+                    <div class="daily-macro"><div class="val" th:text="${dp.totalProtein} + 'g'">0g</div><div class="lbl">Protein</div></div>
+                    <div class="daily-macro"><div class="val" th:text="${dp.totalCarbs} + 'g'">0g</div><div class="lbl">Carbs</div></div>
+                    <div class="daily-macro"><div class="val" th:text="${dp.totalFats} + 'g'">0g</div><div class="lbl">Fats</div></div>
+                    <div class="daily-macro"><div class="val" th:text="${dp.totalFiber} + 'g'">0g</div><div class="lbl">Fiber</div></div>
+                </div>
+
+                <div class="meal-heading"><div class="meal-badge" style="background:#fef9c3;color:#a16207;"><i class="fa-solid fa-sun"></i></div><div><div class="meal-title">Breakfast</div><div class="meal-sub">7:00 AM – 9:00 AM</div></div></div>
+                <div class="row g-4 mb-2" th:replace="~{::recipeCards(${dp.breakfast},'breakfast.png')}"></div>
+
+                <div class="meal-heading"><div class="meal-badge" style="background:#dcfce7;color:#15803d;"><i class="fa-solid fa-bowl-food"></i></div><div><div class="meal-title">Lunch</div><div class="meal-sub">12:30 PM – 2:00 PM</div></div></div>
+                <div class="row g-4 mb-2" th:replace="~{::recipeCards(${dp.lunch},'lunch.png')}"></div>
+
+                <div class="meal-heading"><div class="meal-badge" style="background:#dbeafe;color:#1d4ed8;"><i class="fa-solid fa-moon"></i></div><div><div class="meal-title">Dinner</div><div class="meal-sub">7:00 PM – 8:30 PM</div></div></div>
+                <div class="row g-4 mb-2" th:replace="~{::recipeCards(${dp.dinner},'dinner.png')}"></div>
+
+                <div class="meal-heading"><div class="meal-badge" style="background:#fce7f3;color:#be185d;"><i class="fa-solid fa-apple-whole"></i></div><div><div class="meal-title">Snacks</div><div class="meal-sub">11:00 AM &amp; 4:30 PM</div></div></div>
+                <div class="row g-4 mb-5" th:replace="~{::recipeCards(${dp.snacks},'snacks.png')}"></div>
+            </div>
+        </div>
+
+        <!-- ══════ DAY 2 ══════ -->
+        <div id="day2" class="day-panel">
+            <div th:if="${mealPlan['day2'] != null}" th:with="dp=${mealPlan['day2']}">
+                <div class="d-flex align-items-center gap-3 mb-3 flex-wrap">
+                    <div style="background:var(--primary);color:white;padding:6px 20px;border-radius:100px;font-weight:700;font-size:0.9rem;" th:text="${dp.dayLabel}">Tuesday</div>
+                    <div class="text-muted small"><i class="fa-solid fa-fire text-danger me-1"></i><span th:text="${dp.totalCalories} + ' kcal total'"></span></div>
+                </div>
+                <div class="daily-summary">
+                    <div class="daily-macro"><div class="val" th:text="${dp.totalCalories}">0</div><div class="lbl">kcal</div></div>
+                    <div class="daily-macro"><div class="val" th:text="${dp.totalProtein} + 'g'">0g</div><div class="lbl">Protein</div></div>
+                    <div class="daily-macro"><div class="val" th:text="${dp.totalCarbs} + 'g'">0g</div><div class="lbl">Carbs</div></div>
+                    <div class="daily-macro"><div class="val" th:text="${dp.totalFats} + 'g'">0g</div><div class="lbl">Fats</div></div>
+                    <div class="daily-macro"><div class="val" th:text="${dp.totalFiber} + 'g'">0g</div><div class="lbl">Fiber</div></div>
+                </div>
+                <div class="meal-heading"><div class="meal-badge" style="background:#fef9c3;color:#a16207;"><i class="fa-solid fa-sun"></i></div><div><div class="meal-title">Breakfast</div><div class="meal-sub">7:00 AM – 9:00 AM</div></div></div>
+                <div class="row g-4 mb-2" th:replace="~{::recipeCards(${dp.breakfast},'breakfast.png')}"></div>
+                <div class="meal-heading"><div class="meal-badge" style="background:#dcfce7;color:#15803d;"><i class="fa-solid fa-bowl-food"></i></div><div><div class="meal-title">Lunch</div><div class="meal-sub">12:30 PM – 2:00 PM</div></div></div>
+                <div class="row g-4 mb-2" th:replace="~{::recipeCards(${dp.lunch},'lunch.png')}"></div>
+                <div class="meal-heading"><div class="meal-badge" style="background:#dbeafe;color:#1d4ed8;"><i class="fa-solid fa-moon"></i></div><div><div class="meal-title">Dinner</div><div class="meal-sub">7:00 PM – 8:30 PM</div></div></div>
+                <div class="row g-4 mb-2" th:replace="~{::recipeCards(${dp.dinner},'dinner.png')}"></div>
+                <div class="meal-heading"><div class="meal-badge" style="background:#fce7f3;color:#be185d;"><i class="fa-solid fa-apple-whole"></i></div><div><div class="meal-title">Snacks</div><div class="meal-sub">11:00 AM &amp; 4:30 PM</div></div></div>
+                <div class="row g-4 mb-5" th:replace="~{::recipeCards(${dp.snacks},'snacks.png')}"></div>
+            </div>
+        </div>
+
+        <!-- ══════ DAY 3 ══════ -->
+        <div id="day3" class="day-panel">
+            <div th:if="${mealPlan['day3'] != null}" th:with="dp=${mealPlan['day3']}">
+                <div class="d-flex align-items-center gap-3 mb-3 flex-wrap">
+                    <div style="background:var(--primary);color:white;padding:6px 20px;border-radius:100px;font-weight:700;font-size:0.9rem;" th:text="${dp.dayLabel}">Wednesday</div>
+                    <div class="text-muted small"><i class="fa-solid fa-fire text-danger me-1"></i><span th:text="${dp.totalCalories} + ' kcal total'"></span></div>
+                </div>
+                <div class="daily-summary">
+                    <div class="daily-macro"><div class="val" th:text="${dp.totalCalories}">0</div><div class="lbl">kcal</div></div>
+                    <div class="daily-macro"><div class="val" th:text="${dp.totalProtein} + 'g'">0g</div><div class="lbl">Protein</div></div>
+                    <div class="daily-macro"><div class="val" th:text="${dp.totalCarbs} + 'g'">0g</div><div class="lbl">Carbs</div></div>
+                    <div class="daily-macro"><div class="val" th:text="${dp.totalFats} + 'g'">0g</div><div class="lbl">Fats</div></div>
+                    <div class="daily-macro"><div class="val" th:text="${dp.totalFiber} + 'g'">0g</div><div class="lbl">Fiber</div></div>
+                </div>
+                <div class="meal-heading"><div class="meal-badge" style="background:#fef9c3;color:#a16207;"><i class="fa-solid fa-sun"></i></div><div><div class="meal-title">Breakfast</div><div class="meal-sub">7:00 AM – 9:00 AM</div></div></div>
+                <div class="row g-4 mb-2" th:replace="~{::recipeCards(${dp.breakfast},'breakfast.png')}"></div>
+                <div class="meal-heading"><div class="meal-badge" style="background:#dcfce7;color:#15803d;"><i class="fa-solid fa-bowl-food"></i></div><div><div class="meal-title">Lunch</div><div class="meal-sub">12:30 PM – 2:00 PM</div></div></div>
+                <div class="row g-4 mb-2" th:replace="~{::recipeCards(${dp.lunch},'lunch.png')}"></div>
+                <div class="meal-heading"><div class="meal-badge" style="background:#dbeafe;color:#1d4ed8;"><i class="fa-solid fa-moon"></i></div><div><div class="meal-title">Dinner</div><div class="meal-sub">7:00 PM – 8:30 PM</div></div></div>
+                <div class="row g-4 mb-2" th:replace="~{::recipeCards(${dp.dinner},'dinner.png')}"></div>
+                <div class="meal-heading"><div class="meal-badge" style="background:#fce7f3;color:#be185d;"><i class="fa-solid fa-apple-whole"></i></div><div><div class="meal-title">Snacks</div><div class="meal-sub">11:00 AM &amp; 4:30 PM</div></div></div>
+                <div class="row g-4 mb-5" th:replace="~{::recipeCards(${dp.snacks},'snacks.png')}"></div>
+            </div>
+        </div>
+
+        <!-- ══════ DAY 4 ══════ -->
+        <div id="day4" class="day-panel">
+            <div th:if="${mealPlan['day4'] != null}" th:with="dp=${mealPlan['day4']}">
+                <div class="d-flex align-items-center gap-3 mb-3 flex-wrap">
+                    <div style="background:var(--primary);color:white;padding:6px 20px;border-radius:100px;font-weight:700;font-size:0.9rem;" th:text="${dp.dayLabel}">Thursday</div>
+                    <div class="text-muted small"><i class="fa-solid fa-fire text-danger me-1"></i><span th:text="${dp.totalCalories} + ' kcal total'"></span></div>
+                </div>
+                <div class="daily-summary">
+                    <div class="daily-macro"><div class="val" th:text="${dp.totalCalories}">0</div><div class="lbl">kcal</div></div>
+                    <div class="daily-macro"><div class="val" th:text="${dp.totalProtein} + 'g'">0g</div><div class="lbl">Protein</div></div>
+                    <div class="daily-macro"><div class="val" th:text="${dp.totalCarbs} + 'g'">0g</div><div class="lbl">Carbs</div></div>
+                    <div class="daily-macro"><div class="val" th:text="${dp.totalFats} + 'g'">0g</div><div class="lbl">Fats</div></div>
+                    <div class="daily-macro"><div class="val" th:text="${dp.totalFiber} + 'g'">0g</div><div class="lbl">Fiber</div></div>
+                </div>
+                <div class="meal-heading"><div class="meal-badge" style="background:#fef9c3;color:#a16207;"><i class="fa-solid fa-sun"></i></div><div><div class="meal-title">Breakfast</div><div class="meal-sub">7:00 AM – 9:00 AM</div></div></div>
+                <div class="row g-4 mb-2" th:replace="~{::recipeCards(${dp.breakfast},'breakfast.png')}"></div>
+                <div class="meal-heading"><div class="meal-badge" style="background:#dcfce7;color:#15803d;"><i class="fa-solid fa-bowl-food"></i></div><div><div class="meal-title">Lunch</div><div class="meal-sub">12:30 PM – 2:00 PM</div></div></div>
+                <div class="row g-4 mb-2" th:replace="~{::recipeCards(${dp.lunch},'lunch.png')}"></div>
+                <div class="meal-heading"><div class="meal-badge" style="background:#dbeafe;color:#1d4ed8;"><i class="fa-solid fa-moon"></i></div><div><div class="meal-title">Dinner</div><div class="meal-sub">7:00 PM – 8:30 PM</div></div></div>
+                <div class="row g-4 mb-2" th:replace="~{::recipeCards(${dp.dinner},'dinner.png')}"></div>
+                <div class="meal-heading"><div class="meal-badge" style="background:#fce7f3;color:#be185d;"><i class="fa-solid fa-apple-whole"></i></div><div><div class="meal-title">Snacks</div><div class="meal-sub">11:00 AM &amp; 4:30 PM</div></div></div>
+                <div class="row g-4 mb-5" th:replace="~{::recipeCards(${dp.snacks},'snacks.png')}"></div>
+            </div>
+        </div>
+
+        <!-- ══════ DAY 5 ══════ -->
+        <div id="day5" class="day-panel">
+            <div th:if="${mealPlan['day5'] != null}" th:with="dp=${mealPlan['day5']}">
+                <div class="d-flex align-items-center gap-3 mb-3 flex-wrap">
+                    <div style="background:var(--primary);color:white;padding:6px 20px;border-radius:100px;font-weight:700;font-size:0.9rem;" th:text="${dp.dayLabel}">Friday</div>
+                    <div class="text-muted small"><i class="fa-solid fa-fire text-danger me-1"></i><span th:text="${dp.totalCalories} + ' kcal total'"></span></div>
+                </div>
+                <div class="daily-summary">
+                    <div class="daily-macro"><div class="val" th:text="${dp.totalCalories}">0</div><div class="lbl">kcal</div></div>
+                    <div class="daily-macro"><div class="val" th:text="${dp.totalProtein} + 'g'">0g</div><div class="lbl">Protein</div></div>
+                    <div class="daily-macro"><div class="val" th:text="${dp.totalCarbs} + 'g'">0g</div><div class="lbl">Carbs</div></div>
+                    <div class="daily-macro"><div class="val" th:text="${dp.totalFats} + 'g'">0g</div><div class="lbl">Fats</div></div>
+                    <div class="daily-macro"><div class="val" th:text="${dp.totalFiber} + 'g'">0g</div><div class="lbl">Fiber</div></div>
+                </div>
+                <div class="meal-heading"><div class="meal-badge" style="background:#fef9c3;color:#a16207;"><i class="fa-solid fa-sun"></i></div><div><div class="meal-title">Breakfast</div><div class="meal-sub">7:00 AM – 9:00 AM</div></div></div>
+                <div class="row g-4 mb-2" th:replace="~{::recipeCards(${dp.breakfast},'breakfast.png')}"></div>
+                <div class="meal-heading"><div class="meal-badge" style="background:#dcfce7;color:#15803d;"><i class="fa-solid fa-bowl-food"></i></div><div><div class="meal-title">Lunch</div><div class="meal-sub">12:30 PM – 2:00 PM</div></div></div>
+                <div class="row g-4 mb-2" th:replace="~{::recipeCards(${dp.lunch},'lunch.png')}"></div>
+                <div class="meal-heading"><div class="meal-badge" style="background:#dbeafe;color:#1d4ed8;"><i class="fa-solid fa-moon"></i></div><div><div class="meal-title">Dinner</div><div class="meal-sub">7:00 PM – 8:30 PM</div></div></div>
+                <div class="row g-4 mb-2" th:replace="~{::recipeCards(${dp.dinner},'dinner.png')}"></div>
+                <div class="meal-heading"><div class="meal-badge" style="background:#fce7f3;color:#be185d;"><i class="fa-solid fa-apple-whole"></i></div><div><div class="meal-title">Snacks</div><div class="meal-sub">11:00 AM &amp; 4:30 PM</div></div></div>
+                <div class="row g-4 mb-5" th:replace="~{::recipeCards(${dp.snacks},'snacks.png')}"></div>
+            </div>
+        </div>
+
+        <!-- ══════ DAY 6 ══════ -->
+        <div id="day6" class="day-panel">
+            <div th:if="${mealPlan['day6'] != null}" th:with="dp=${mealPlan['day6']}">
+                <div class="d-flex align-items-center gap-3 mb-3 flex-wrap">
+                    <div style="background:var(--primary);color:white;padding:6px 20px;border-radius:100px;font-weight:700;font-size:0.9rem;" th:text="${dp.dayLabel}">Saturday</div>
+                    <div class="text-muted small"><i class="fa-solid fa-fire text-danger me-1"></i><span th:text="${dp.totalCalories} + ' kcal total'"></span></div>
+                </div>
+                <div class="daily-summary">
+                    <div class="daily-macro"><div class="val" th:text="${dp.totalCalories}">0</div><div class="lbl">kcal</div></div>
+                    <div class="daily-macro"><div class="val" th:text="${dp.totalProtein} + 'g'">0g</div><div class="lbl">Protein</div></div>
+                    <div class="daily-macro"><div class="val" th:text="${dp.totalCarbs} + 'g'">0g</div><div class="lbl">Carbs</div></div>
+                    <div class="daily-macro"><div class="val" th:text="${dp.totalFats} + 'g'">0g</div><div class="lbl">Fats</div></div>
+                    <div class="daily-macro"><div class="val" th:text="${dp.totalFiber} + 'g'">0g</div><div class="lbl">Fiber</div></div>
+                </div>
+                <div class="meal-heading"><div class="meal-badge" style="background:#fef9c3;color:#a16207;"><i class="fa-solid fa-sun"></i></div><div><div class="meal-title">Breakfast</div><div class="meal-sub">7:00 AM – 9:00 AM</div></div></div>
+                <div class="row g-4 mb-2" th:replace="~{::recipeCards(${dp.breakfast},'breakfast.png')}"></div>
+                <div class="meal-heading"><div class="meal-badge" style="background:#dcfce7;color:#15803d;"><i class="fa-solid fa-bowl-food"></i></div><div><div class="meal-title">Lunch</div><div class="meal-sub">12:30 PM – 2:00 PM</div></div></div>
+                <div class="row g-4 mb-2" th:replace="~{::recipeCards(${dp.lunch},'lunch.png')}"></div>
+                <div class="meal-heading"><div class="meal-badge" style="background:#dbeafe;color:#1d4ed8;"><i class="fa-solid fa-moon"></i></div><div><div class="meal-title">Dinner</div><div class="meal-sub">7:00 PM – 8:30 PM</div></div></div>
+                <div class="row g-4 mb-2" th:replace="~{::recipeCards(${dp.dinner},'dinner.png')}"></div>
+                <div class="meal-heading"><div class="meal-badge" style="background:#fce7f3;color:#be185d;"><i class="fa-solid fa-apple-whole"></i></div><div><div class="meal-title">Snacks</div><div class="meal-sub">11:00 AM &amp; 4:30 PM</div></div></div>
+                <div class="row g-4 mb-5" th:replace="~{::recipeCards(${dp.snacks},'snacks.png')}"></div>
+            </div>
+        </div>
+
+        <!-- ══════ DAY 7 ══════ -->
+        <div id="day7" class="day-panel">
+            <div th:if="${mealPlan['day7'] != null}" th:with="dp=${mealPlan['day7']}">
+                <div class="d-flex align-items-center gap-3 mb-3 flex-wrap">
+                    <div style="background:var(--primary);color:white;padding:6px 20px;border-radius:100px;font-weight:700;font-size:0.9rem;" th:text="${dp.dayLabel}">Sunday</div>
+                    <div class="text-muted small"><i class="fa-solid fa-fire text-danger me-1"></i><span th:text="${dp.totalCalories} + ' kcal total'"></span></div>
+                </div>
+                <div class="daily-summary">
+                    <div class="daily-macro"><div class="val" th:text="${dp.totalCalories}">0</div><div class="lbl">kcal</div></div>
+                    <div class="daily-macro"><div class="val" th:text="${dp.totalProtein} + 'g'">0g</div><div class="lbl">Protein</div></div>
+                    <div class="daily-macro"><div class="val" th:text="${dp.totalCarbs} + 'g'">0g</div><div class="lbl">Carbs</div></div>
+                    <div class="daily-macro"><div class="val" th:text="${dp.totalFats} + 'g'">0g</div><div class="lbl">Fats</div></div>
+                    <div class="daily-macro"><div class="val" th:text="${dp.totalFiber} + 'g'">0g</div><div class="lbl">Fiber</div></div>
+                </div>
+                <div class="meal-heading"><div class="meal-badge" style="background:#fef9c3;color:#a16207;"><i class="fa-solid fa-sun"></i></div><div><div class="meal-title">Breakfast</div><div class="meal-sub">7:00 AM – 9:00 AM</div></div></div>
+                <div class="row g-4 mb-2" th:replace="~{::recipeCards(${dp.breakfast},'breakfast.png')}"></div>
+                <div class="meal-heading"><div class="meal-badge" style="background:#dcfce7;color:#15803d;"><i class="fa-solid fa-bowl-food"></i></div><div><div class="meal-title">Lunch</div><div class="meal-sub">12:30 PM – 2:00 PM</div></div></div>
+                <div class="row g-4 mb-2" th:replace="~{::recipeCards(${dp.lunch},'lunch.png')}"></div>
+                <div class="meal-heading"><div class="meal-badge" style="background:#dbeafe;color:#1d4ed8;"><i class="fa-solid fa-moon"></i></div><div><div class="meal-title">Dinner</div><div class="meal-sub">7:00 PM – 8:30 PM</div></div></div>
+                <div class="row g-4 mb-2" th:replace="~{::recipeCards(${dp.dinner},'dinner.png')}"></div>
+                <div class="meal-heading"><div class="meal-badge" style="background:#fce7f3;color:#be185d;"><i class="fa-solid fa-apple-whole"></i></div><div><div class="meal-title">Snacks</div><div class="meal-sub">11:00 AM &amp; 4:30 PM</div></div></div>
+                <div class="row g-4 mb-5" th:replace="~{::recipeCards(${dp.snacks},'snacks.png')}"></div>
+            </div>
+        </div>
+
+    </div><!-- end mealPlan exists -->
+
+    <!-- EMPTY STATE -->
+    <div class="text-center py-5" th:if="${mealPlan == null or #maps.isEmpty(mealPlan)}">
+        <i class="fa-solid fa-plate-wheat fs-1 text-muted opacity-25 mb-3 d-block"></i>
+        <h4 class="text-muted">No meal plan generated yet.</h4>
+        <p class="text-muted small">Complete your health profile to get your personalized 7-day meal plan.</p>
+        <a th:href="@{/healthprofile}" class="btn btn-success rounded-pill px-4 mt-2">
+            <i class="fa-solid fa-user-pen me-1"></i> Update Profile
+        </a>
+    </div>
+
+</main>
+
+<!-- ════════════════════════════════════════
+     THYMELEAF FRAGMENT — Recipe Cards
+     2 per row, horizontal card: banner-left + content-right
+═════════════════════════════════════════ -->
+<th:block th:fragment="recipeCards(recipeList, imgName)">
+    <div class="col-md-6" th:each="recipe, rStat : ${recipeList}">
+        <div class="recipe-card" th:attr="data-idx=${rStat.index}">
+
+            <!-- LEFT — gradient colour panel -->
+            <div class="recipe-banner" th:attr="data-name=${recipe.name}">
+                <div class="recipe-emoji" th:attr="data-name=${recipe.name}">🍽️</div>
+                <div class="recipe-banner-name" th:text="${recipe.name}">Name</div>
+                <div class="cal-badge-banner">
+                    <i class="fa-solid fa-fire"></i>
+                    <span th:text="${recipe.calories}">0</span> kcal
+                </div>
+                <div class="condition-tag-banner"
+                     th:if="${recipe.conditionTag != null}"
+                     th:text="${recipe.conditionTag}"></div>
+            </div>
+
+            <!-- RIGHT — card body -->
+            <div class="recipe-body">
+                <div class="recipe-body-top">
+                    <div class="recipe-name" th:text="${recipe.name}">Name</div>
+                </div>
+                <p class="recipe-desc" th:text="${recipe.description}">Desc</p>
+
+                <!-- INGREDIENTS DROPDOWN -->
+                <details class="recipe-dropdown">
+                    <summary>
+                        <span><i class="fa-solid fa-basket-shopping me-1" style="color:#22c55e;"></i> Ingredients</span>
+                        <i class="fa-solid fa-chevron-down dropdown-arrow"></i>
+                    </summary>
+                    <div class="dropdown-body">
+                        <ul>
+                            <li th:each="ing : ${recipe.ingredients}" th:text="${ing}"></li>
+                        </ul>
+                    </div>
+                </details>
+
+                <!-- PREPARATION DROPDOWN -->
+                <details class="recipe-dropdown">
+                    <summary>
+                        <span><i class="fa-solid fa-list-check me-1" style="color:#6366f1;"></i> Preparation Steps</span>
+                        <i class="fa-solid fa-chevron-down dropdown-arrow"></i>
+                    </summary>
+                    <div class="dropdown-body">
+                        <ol>
+                            <li th:each="step : ${recipe.instructions}" th:text="${step}"></li>
+                        </ol>
+                    </div>
+                </details>
+
+                <!-- MACROS -->
+                <div class="nutrition-grid">
+                    <div class="macro-box macro-protein">
+                        <span class="macro-val" th:text="${recipe.protein} + 'g'"></span>
+                        <span class="macro-lbl">💪 Protein</span>
+                    </div>
+                    <div class="macro-box macro-carbs">
+                        <span class="macro-val" th:text="${recipe.carbs} + 'g'"></span>
+                        <span class="macro-lbl">⚡ Carbs</span>
+                    </div>
+                    <div class="macro-box macro-fats">
+                        <span class="macro-val" th:text="${recipe.fats} + 'g'"></span>
+                        <span class="macro-lbl">🫧 Fats</span>
+                    </div>
+                </div>
+            </div><!-- end recipe-body -->
+
+        </div><!-- end recipe-card -->
+    </div>
+</th:block>
+
+<footer class="text-center py-4 border-top bg-white">
+    <p class="text-muted small mb-0">© 2026 NutriLogic • Smart Health Intelligence</p>
+</footer>
+
+<script>
+    function showDay(dayId, btn) {
+        document.querySelectorAll('.day-panel').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.day-tab').forEach(t => t.classList.remove('active'));
+        document.getElementById(dayId).classList.add('active');
+        btn.classList.add('active');
+        assignBanners(); // reassign banners when switching day
+    }
+
+    // 20 unique gradient pairs
+    const GRADIENTS = [
+        ['#f97316','#ea580c'], // orange
+        ['#22c55e','#16a34a'], // green
+        ['#3b82f6','#1d4ed8'], // blue
+        ['#a855f7','#7c3aed'], // purple
+        ['#ef4444','#b91c1c'], // red
+        ['#f59e0b','#d97706'], // amber
+        ['#06b6d4','#0891b2'], // cyan
+        ['#ec4899','#be185d'], // pink
+        ['#84cc16','#65a30d'], // lime
+        ['#14b8a6','#0f766e'], // teal
+        ['#6366f1','#4f46e5'], // indigo
+        ['#f43f5e','#e11d48'], // rose
+        ['#0ea5e9','#0284c7'], // sky
+        ['#d946ef','#a21caf'], // fuchsia
+        ['#fb923c','#ea580c'], // orange-red
+        ['#4ade80','#22c55e'], // light green
+        ['#818cf8','#6366f1'], // soft indigo
+        ['#2dd4bf','#14b8a6'], // teal
+        ['#fbbf24','#f59e0b'], // yellow
+        ['#f87171','#ef4444'], // soft red
+    ];
+
+    // Food emojis mapped by keyword in recipe name
+    const EMOJI_MAP = [
+        ['paratha','🫓'], ['roti','🌮'], ['rice','🍚'], ['dal','🥘'],
+        ['khichdi','🍲'], ['idli','🥟'], ['dosa','🥞'], ['upma','🥣'],
+        ['poha','🌾'], ['oats','🥣'], ['egg','🍳'], ['paneer','🧀'],
+        ['chole','🫘'], ['rajma','🫘'], ['sabzi','🥗'], ['salad','🥗'],
+        ['soup','🍜'], ['curry','🍛'], ['chicken','🍗'], ['fish','🐟'],
+        ['mutton','🥩'], ['biryani','🍛'], ['pulao','🍚'], ['sattu','🥤'],
+        ['shake','🥤'], ['smoothie','🥤'], ['juice','🍹'], ['tea','🍵'],
+        ['coffee','☕'], ['makhana','🍿'], ['chana','🫘'], ['sprouts','🌱'],
+        ['fruit','🍎'], ['banana','🍌'], ['apple','🍎'], ['curd','🥛'],
+        ['buttermilk','🥛'], ['lassi','🥛'], ['raita','🥛'], ['nuts','🥜'],
+        ['almond','🌰'], ['walnut','🌰'], ['moong','🫘'], ['bajra','🌾'],
+        ['jowar','🌾'], ['ragi','🌾'], ['methi','🌿'], ['palak','🥬'],
+        ['gourd','🥒'], ['karela','🥒'], ['lauki','🥒'], ['bhindi','🫑'],
+        ['bread','🍞'], ['sandwich','🥪'], ['wrap','🌯'], ['roll','🌯'],
+    ];
+
+    function getEmoji(name) {
+        const lower = name.toLowerCase();
+        for (const [kw, emoji] of EMOJI_MAP) {
+            if (lower.includes(kw)) return emoji;
+        }
+        return '🍽️';
+    }
+
+    function strHash(str) {
+        let h = 0;
+        for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) & 0xffffffff;
+        return Math.abs(h);
+    }
+
+    function assignBanners() {
+        document.querySelectorAll('.recipe-banner').forEach(banner => {
+            const name = banner.getAttribute('data-name') || '';
+            const [c1, c2] = GRADIENTS[strHash(name) % GRADIENTS.length];
+            banner.style.background = `linear-gradient(135deg, ${c1}, ${c2})`;
+            const emojiEl = banner.querySelector('.recipe-emoji');
+            if (emojiEl) emojiEl.textContent = getEmoji(name);
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', assignBanners);
+</script>
+</body>
+</html>

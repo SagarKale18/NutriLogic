@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>NutriLogic | Sign In</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --g50:#f0fdf4;--g100:#dcfce7;--g200:#bbf7d0;--g400:#4ade80;
+      --g500:#22c55e;--g600:#16a34a;--g700:#15803d;
+      --s50:#f8fafc;--s100:#f1f5f9;--s200:#e2e8f0;--s300:#cbd5e1;
+      --s400:#94a3b8;--s500:#64748b;--s700:#334155;--s900:#0f172a;
+      --white:#fff;
+      --shadow-green:0 8px 24px rgba(34,197,94,.22);
+    }
+    html,body{height:100%;}
+    body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--s50);color:var(--s900);}
+    .layout{display:flex;min-height:100vh;}
+
+    /* LEFT PANEL */
+    .brand-panel{
+      flex:1.1;position:relative;overflow:hidden;
+      background:linear-gradient(145deg,#064e3b 0%,#065f46 30%,#047857 60%,#059669 100%);
+      display:flex;flex-direction:column;justify-content:center;padding:70px;
+      animation:panelIn .65s cubic-bezier(.22,1,.36,1) both;
+    }
+    @keyframes panelIn{from{opacity:0;transform:translateX(-28px)}to{opacity:1;transform:translateX(0)}}
+    .dot-grid{position:absolute;inset:0;pointer-events:none;
+      background-image:radial-gradient(rgba(255,255,255,.13) 1px,transparent 1px);
+      background-size:28px 28px;}
+    .deco-circle-1{position:absolute;width:480px;height:480px;border-radius:50%;
+      background:rgba(255,255,255,.05);top:-130px;right:-130px;pointer-events:none;}
+    .deco-circle-2{position:absolute;width:280px;height:280px;border-radius:50%;
+      background:rgba(255,255,255,.04);bottom:-70px;left:-60px;pointer-events:none;}
+
+    .brand-content{position:relative;z-index:2;}
+    .brand-logo{display:flex;align-items:center;gap:14px;margin-bottom:60px;}
+    .brand-logo-icon{width:48px;height:48px;border-radius:14px;background:rgba(255,255,255,.15);
+      border:1px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;
+      font-size:1.3rem;color:white;}
+    .brand-logo-name{font-family:'Playfair Display',serif;font-size:1.55rem;color:white;letter-spacing:-.2px;}
+
+    .brand-headline{font-family:'Playfair Display',serif;
+      font-size:clamp(2.2rem,3.2vw,3rem);color:white;
+      line-height:1.12;letter-spacing:-.4px;margin-bottom:18px;}
+    .brand-headline em{color:#6ee7b7;font-style:italic;}
+    .brand-sub{color:rgba(255,255,255,.62);font-size:.98rem;line-height:1.72;margin-bottom:44px;max-width:380px;}
+
+    /* stat row */
+    .stat-row{display:flex;gap:0;margin-bottom:44px;}
+    .stat-item{flex:1;padding-right:24px;border-right:1px solid rgba(255,255,255,.12);}
+    .stat-item:last-child{border-right:none;padding-right:0;padding-left:24px;}
+    .stat-item:nth-child(2){padding-left:24px;}
+    .stat-num{font-family:'Playfair Display',serif;font-size:1.8rem;color:white;line-height:1;}
+    .stat-lbl{font-size:.68rem;color:rgba(255,255,255,.48);text-transform:uppercase;letter-spacing:1px;margin-top:4px;}
+
+    /* checklist */
+    .feat-divider{height:1px;background:rgba(255,255,255,.1);margin:0 0 24px;}
+    .section-lbl{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:rgba(110,231,183,.7);margin-bottom:14px;}
+    .checklist{display:flex;flex-direction:column;gap:11px;}
+    .check-item{display:flex;align-items:flex-start;gap:12px;opacity:0;animation:featIn .5s forwards;}
+    .check-item:nth-child(1){animation-delay:.3s}
+    .check-item:nth-child(2){animation-delay:.42s}
+    .check-item:nth-child(3){animation-delay:.54s}
+    .check-item:nth-child(4){animation-delay:.66s}
+    .check-item:nth-child(5){animation-delay:.78s}
+    @keyframes featIn{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:translateX(0)}}
+    .check-dot{flex-shrink:0;width:20px;height:20px;border-radius:50%;background:rgba(110,231,183,.18);border:1px solid rgba(110,231,183,.35);display:flex;align-items:center;justify-content:center;font-size:.6rem;color:#6ee7b7;margin-top:1px;}
+    .check-text{font-size:.82rem;color:rgba(255,255,255,.75);line-height:1.55;}
+    .check-text strong{color:white;font-weight:700;}
+
+    /* RIGHT PANEL */
+    .form-panel{
+      flex:1;background:var(--white);display:flex;flex-direction:column;
+      justify-content:center;align-items:center;padding:60px 70px;
+      animation:panelInR .65s .08s cubic-bezier(.22,1,.36,1) both;
+    }
+    @keyframes panelInR{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:translateX(0)}}
+
+    .form-box{width:100%;max-width:400px;}
+    .form-eyebrow{font-size:.72rem;letter-spacing:2px;text-transform:uppercase;color:var(--g600);font-weight:700;margin-bottom:10px;}
+    .form-title{font-family:'Playfair Display',serif;font-size:2rem;color:var(--s900);margin-bottom:6px;}
+    .form-sub{color:var(--s500);font-size:.9rem;margin-bottom:36px;}
+
+    .alert-ok{background:var(--g50);border:1px solid var(--g200);border-radius:10px;padding:12px 16px;color:var(--g700);font-size:.85rem;margin-bottom:22px;display:flex;gap:10px;align-items:center;}
+    .alert-err{background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:12px 16px;color:#b91c1c;font-size:.85rem;margin-bottom:22px;display:flex;gap:10px;align-items:center;}
+
+    .field{margin-bottom:18px;}
+    .field label{display:block;font-size:.75rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--s700);margin-bottom:8px;}
+    .input-wrap{position:relative;}
+    .input-wrap i{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--s400);font-size:.85rem;pointer-events:none;transition:color .25s;}
+    .input-wrap:focus-within i{color:var(--g500);}
+    input[type=text],input[type=password]{
+      width:100%;padding:13px 16px 13px 42px;
+      background:var(--s50);border:1.5px solid var(--s200);
+      border-radius:12px;color:var(--s900);
+      font-family:'Plus Jakarta Sans',sans-serif;font-size:.93rem;
+      outline:none;transition:all .25s;
+    }
+    input::placeholder{color:var(--s400);}
+    input:hover{border-color:var(--s300);}
+    input:focus{border-color:var(--g500);background:white;box-shadow:0 0 0 3px rgba(34,197,94,.1);}
+
+    .btn-submit{
+      width:100%;padding:14px;margin-top:8px;
+      background:linear-gradient(135deg,var(--g500),var(--g600));
+      border:none;border-radius:12px;cursor:pointer;
+      color:white;font-family:'Plus Jakarta Sans',sans-serif;
+      font-size:.95rem;font-weight:700;letter-spacing:.2px;
+      transition:transform .2s,box-shadow .25s;
+      box-shadow:var(--shadow-green);
+    }
+    .btn-submit:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(34,197,94,.32);}
+    .btn-submit:active{transform:translateY(0);}
+
+    .btn-admin {
+      width: 100%;padding: 13px;margin-top: 12px;
+      background: linear-gradient(135deg, #b45309, #92400e);
+      border: none;border-radius: 12px;cursor: pointer;color: #fef3c7;
+      font-family: 'Plus Jakarta Sans', sans-serif;font-size: .88rem;font-weight: 700;
+      letter-spacing: .4px;text-transform: uppercase;transition: all .25s;
+      display: flex;align-items: center;justify-content: center;gap: 9px;
+      box-shadow: 0 8px 22px rgba(180, 83, 9, .30);position: relative;overflow: hidden;
+    }
+    .btn-admin::before {
+      content: '';position: absolute;top: 0; left: -75%;
+      width: 50%; height: 100%;
+      background: linear-gradient(120deg, transparent, rgba(255,255,255,.18), transparent);
+      transform: skewX(-20deg);transition: left .55s ease;
+    }
+    .btn-admin:hover::before { left: 130%; }
+    .btn-admin:hover {
+      background: linear-gradient(135deg, #d97706, #b45309);
+      transform: translateY(-2px);box-shadow: 0 12px 28px rgba(180, 83, 9, .40);color: white;
+    }
+    .btn-admin:active { transform: translateY(0); }
+    .btn-admin i { font-size: .95rem;filter: drop-shadow(0 0 4px rgba(254,243,199,.5)); }
+
+    .form-foot{text-align:center;margin-top:24px;font-size:.86rem;color:var(--s500);}
+    .form-foot a{color:var(--g600);text-decoration:none;font-weight:700;transition:color .2s;}
+    .form-foot a:hover{color:var(--g700);}
+    .copy{text-align:center;margin-top:auto;padding-top:28px;font-size:.72rem;color:var(--s400);}
+
+    @media(max-width:900px){.brand-panel{display:none;}.form-panel{padding:40px 24px;}}
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <div class="brand-panel">
+    <div class="dot-grid"></div>
+    <div class="deco-circle-1"></div>
+    <div class="deco-circle-2"></div>
+    <div class="brand-content">
+
+      <div class="brand-logo">
+        <div class="brand-logo-icon"><i class="fa-solid fa-leaf"></i></div>
+        <span class="brand-logo-name">NutriLogic</span>
+      </div>
+
+      <h1 class="brand-headline">Your diet,<br><em>decoded</em><br>naturally.</h1>
+      <p class="brand-sub">Your personalised health dashboard is ready. Sign in to view your NHRS risk score, BMI trend, calorie plan, and today's condition-specific Indian meal plan.</p>
+
+      <div class="stat-row">
+        <div class="stat-item">
+          <div class="stat-num">NHRS</div>
+          <div class="stat-lbl">Risk Algorithm</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">196+</div>
+          <div class="stat-lbl">Indian Recipes</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">5-in-1</div>
+          <div class="stat-lbl">Health Metrics</div>
+        </div>
+      </div>
+
+      <div class="feat-divider"></div>
+      <div class="section-lbl"><i class="fa-solid fa-circle-check" style="margin-right:6px;"></i> What awaits you today</div>
+
+      <div class="checklist">
+        <div class="check-item">
+          <div class="check-dot"><i class="fa-solid fa-check"></i></div>
+          <div class="check-text"><strong>NHRS Risk Score</strong> — Your multi-factor health risk score combining BMI, condition, sleep and age.</div>
+        </div>
+        <div class="check-item">
+          <div class="check-dot"><i class="fa-solid fa-check"></i></div>
+          <div class="check-text"><strong>BMR &amp; Daily Calories</strong> — Calculated via Harris-Benedict equation adjusted for your activity level.</div>
+        </div>
+        <div class="check-item">
+          <div class="check-dot"><i class="fa-solid fa-check"></i></div>
+          <div class="check-text"><strong>Ideal Weight Gap</strong> — Devine formula shows exactly how far you are from your clinically ideal weight.</div>
+        </div>
+        <div class="check-item">
+          <div class="check-dot"><i class="fa-solid fa-check"></i></div>
+          <div class="check-text"><strong>Today's Meal Plan</strong> — 4 condition-specific Indian meals curated for your medical profile.</div>
+        </div>
+        <div class="check-item">
+          <div class="check-dot"><i class="fa-solid fa-check"></i></div>
+          <div class="check-text"><strong>Water Tracker</strong> — Live hydration goal based on weight × 30ml with 24-hour auto reset.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ RIGHT PANEL — 100% UNTOUCHED ══ -->
+  <div class="form-panel">
+    <div class="form-box">
+      <div class="form-eyebrow">Welcome back</div>
+      <h2 class="form-title">Sign in</h2>
+      <p class="form-sub">Continue your health journey where you left off.</p>
+
+      <div th:if="${successMessage}" class="alert-ok">
+        <i class="fa-solid fa-circle-check"></i><span th:text="${successMessage}"></span>
+      </div>
+      <div th:if="${param.error}" class="alert-err">
+        <i class="fa-solid fa-circle-xmark"></i> Invalid username or password.
+      </div>
+
+      <form th:action="@{/login}" method="post" id="loginForm">
+        <div class="field">
+          <label>Username</label>
+          <div class="input-wrap">
+            <i class="fa-solid fa-user"></i>
+            <input type="text" name="username" id="uName" placeholder="Enter your username" required autofocus/>
+          </div>
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <div class="input-wrap">
+            <i class="fa-solid fa-lock"></i>
+            <input type="password" name="password" id="pWord" placeholder="Enter your password" required/>
+          </div>
+        </div>
+        <button type="submit" class="btn-submit">Sign in to Dashboard &rarr;</button>
+
+        <button type="button" class="btn-admin" onclick="loginAsAdmin()">
+          <i class="fa-solid fa-user-shield"></i> Login as Admin
+        </button>
+      </form>
+      <p class="form-foot">New here? <a th:href="@{/register}">Create a free account</a></p>
+    </div>
+    <p class="copy"> © 2026 NutriLogic • Smart Health Intelligence</p>
+  </div>
+
+</div>
+
+<script>
+	function loginAsAdmin() {
+	    document.getElementById('uName').value = 'Admin';
+	    document.getElementById('pWord').value = 'Nutrilogic';
+	    setTimeout(function() {
+	        document.getElementById('loginForm').submit();
+	    }, 100);
+	}
+</script>
+
+</body>
+</html>

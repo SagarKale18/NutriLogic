@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>NutriLogic | Health Profile</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    
+    <style>
+        :root {
+            --primary-green: #22c55e;
+            --primary-dark: #16a34a;
+            --bg-mint: #f8fafc;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+            --border-soft: #f1f5f9;
+            --card-shadow: 0 20px 25px -5px rgba(0,0,0,0.05), 0 10px 10px -5px rgba(0,0,0,0.02);
+            --nav-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+
+        body {
+            background-color: var(--bg-mint);
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            color: var(--text-dark);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 40px 20px;
+        }
+
+        /* DASHBOARD BUTTON */
+        .dashboard-return {
+            position: fixed;
+            top: 25px;
+            right: 40px;
+            text-decoration: none;
+            color: #1e293b;
+            font-weight: 600;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 24px;
+            background: #ffffff;
+            border-radius: 14px;
+            border: 1px solid #eef2f6;
+            box-shadow: var(--nav-shadow);
+            transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+            z-index: 100;
+        }
+        .dashboard-return:hover {
+            color: var(--primary-green);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.06);
+            transform: translateY(-2px);
+        }
+        .dashboard-return:hover i { transform: translateX(-4px); }
+        .dashboard-return i { transition: transform 0.3s ease; }
+
+        /* MAIN CARD */
+        .main-container {
+            width: 100%;
+            max-width: 620px;
+            z-index: 1;
+        }
+
+        .profile-card {
+            background: white;
+            padding: 50px 40px;
+            border-radius: 32px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid white;
+        }
+
+        .icon-badge {
+            width: 70px; height: 70px;
+            background: #f0fdf4;
+            color: var(--primary-green);
+            border-radius: 22px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2rem;
+            margin: 0 auto 30px auto;
+        }
+
+        h2 { font-weight: 800; color: var(--text-dark); text-align: center; letter-spacing: -1px; margin-bottom: 10px; }
+        .subtitle { color: var(--text-muted); margin-bottom: 40px; text-align: center; font-size: 0.95rem; line-height: 1.6; }
+
+        /* SECTION DIVIDER */
+        .section-divider {
+            display: flex; align-items: center; gap: 12px;
+            margin: 30px 0 20px 0;
+        }
+        .section-divider .section-line {
+            flex: 1; height: 1px; background: var(--border-soft);
+        }
+        .section-divider .section-title {
+            font-size: 0.68rem; font-weight: 700;
+            color: var(--primary-green);
+            text-transform: uppercase; letter-spacing: 1.5px;
+            white-space: nowrap;
+        }
+
+        label {
+            font-weight: 700;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            display: block;
+        }
+
+        .form-control, .form-select {
+            padding: 15px 20px;
+            border-radius: 16px;
+            border: 2px solid var(--border-soft);
+            background: #fcfdfe;
+            transition: 0.3s cubic-bezier(0.4,0,0.2,1);
+            font-size: 1rem;
+            color: var(--text-dark);
+            font-family: 'Poppins', sans-serif;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-green);
+            box-shadow: 0 0 0 5px rgba(34,197,94,0.08);
+            background: white;
+            outline: none;
+        }
+
+        .btn-generate {
+            background: linear-gradient(135deg, var(--primary-green), var(--primary-dark));
+            border: none;
+            padding: 18px;
+            border-radius: 18px;
+            font-weight: 700;
+            color: white;
+            transition: 0.4s;
+            width: 100%;
+            margin-top: 25px;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+        }
+        .btn-generate:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 25px -5px rgba(34,197,94,0.3);
+            filter: contrast(1.1);
+        }
+
+        .brand-footer {
+            text-align: center;
+            margin-top: 35px;
+            font-size: 0.85rem;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        @media (max-width: 576px) {
+            .dashboard-return { top: 20px; right: 20px; padding: 10px 18px; font-size: 0.85rem; }
+            .profile-card { padding: 40px 25px; }
+        }
+    </style>
+</head>
+<body>
+
+<a th:href="@{/}" class="dashboard-return">
+    <i class="fa-solid fa-arrow-left"></i>
+    <span>Dashboard</span>
+</a>
+
+<div class="main-container">
+    <div class="profile-card">
+
+        <div class="icon-badge">
+            <i class="fa-solid fa-heart-pulse"></i>
+        </div>
+
+        <h2>Health Metrics</h2>
+        <p class="subtitle">Enter your complete health details to receive a personalized analysis and meal plan.</p>
+
+        <form th:action="@{/save}" th:object="${healthProfile}" method="post">
+
+            <input type="hidden" th:name="${_csrf != null ? _csrf.parameterName : '_csrf'}"
+                   th:value="${_csrf != null ? _csrf.token : ''}"/>
+
+            <!-- ── SECTION 1: BASIC INFO ── -->
+            <div class="section-divider">
+                <div class="section-line"></div>
+                <div class="section-title"><i class="fa-solid fa-user me-1"></i> Basic Information</div>
+                <div class="section-line"></div>
+            </div>
+
+            <!-- Gender -->
+            <div class="mb-4">
+                <label>Gender</label>
+                <select th:field="*{gender}" class="form-select" required>
+                    <option value="" disabled selected>Select gender...</option>
+                    <option value="Male">👨 Male</option>
+                    <option value="Female">👩 Female</option>
+                </select>
+            </div>
+
+            <!-- Age -->
+            <div class="mb-4">
+                <label>How old are you?</label>
+                <input type="number" th:field="*{age}" class="form-control"
+                       placeholder="Age in years" required min="10" max="100"/>
+            </div>
+
+            <!-- Weight + Height -->
+            <div class="row g-4 mb-4">
+                <div class="col-sm-6">
+                    <label>Weight (kg)</label>
+                    <input type="number" step="0.1" th:field="*{weight}" class="form-control"
+                           placeholder="00.0" required min="20" max="250"/>
+                </div>
+                <div class="col-sm-6">
+                    <label>Height (cm)</label>
+                    <input type="number" step="0.1" th:field="*{height}" class="form-control"
+                           placeholder="000" required min="100" max="250"/>
+                </div>
+            </div>
+
+            <!-- Goal -->
+            <div class="mb-4">
+                <label>Your Objective</label>
+                <select th:field="*{goal}" class="form-select" required>
+                    <option value="" disabled selected>Select a goal...</option>
+                    <option value="Lose Weight">📉 Lose Weight</option>
+                    <option value="Gain Muscle">💪 Gain Muscle</option>
+                    <option value="Maintain">⚖️ Maintain Health</option>
+                </select>
+            </div>
+
+            <!-- ── SECTION 2: MEDICAL INFO ── -->
+            <div class="section-divider">
+                <div class="section-line"></div>
+                <div class="section-title"><i class="fa-solid fa-stethoscope me-1"></i> Medical Information</div>
+                <div class="section-line"></div>
+            </div>
+
+            <!-- Medical Condition -->
+            <div class="mb-4">
+                <label>Medical Condition</label>
+                <select th:field="*{medicalCondition}" class="form-select" required>
+                    <option value="None">✅ None — I am healthy</option>
+                    <option value="Diabetes">🩸 Diabetes (Sugar)</option>
+                    <option value="BloodPressure">💊 Blood Pressure</option>
+                    <option value="HeartDisease">❤️ Heart Disease</option>
+                    <option value="Thyroid">🦋 Thyroid</option>
+                    <option value="PCOD">🌸 PCOD / PCOS</option>
+                    <option value="Other">🔵 Other</option>
+                </select>
+            </div>
+
+            <!-- ── SECTION 3: ACTIVITY & LIFESTYLE ── -->
+            <div class="section-divider">
+                <div class="section-line"></div>
+                <div class="section-title"><i class="fa-solid fa-person-running me-1"></i> Activity &amp; Lifestyle</div>
+                <div class="section-line"></div>
+            </div>
+
+            <!-- Activity Level -->
+            <div class="mb-4">
+                <label>Activity Level</label>
+                <select th:field="*{activityLevel}" class="form-select" required>
+                    <option value="" disabled selected>Select activity level...</option>
+                    <option value="Sedentary">🪑 Sedentary — Office work, Study</option>
+                    <option value="LightlyActive">🚶 Lightly Active — Teacher, Shopkeeper</option>
+                    <option value="ModeratelyActive">🏃 Moderately Active — Construction Worker</option>
+                    <option value="VeryActive">🌾 Very Active — Farmer, Labour</option>
+                    <option value="ExtremelyActive">⚡ Extremely Active — Heavy Manual Work</option>
+                </select>
+            </div>
+
+            <!-- Stress Level -->
+            <div class="mb-4">
+                <label>Stress Level</label>
+                <select th:field="*{stressLevel}" class="form-select" required>
+                    <option value="" disabled selected>Select stress level...</option>
+                    <option value="Low">🟢 Low — Relaxed and calm</option>
+                    <option value="Medium">🟡 Medium — Moderate stress</option>
+                    <option value="High">🔴 High — Very stressed</option>
+                </select>
+            </div>
+
+            <!-- ── SECTION 4: SLEEP INFO ── -->
+            <div class="section-divider">
+                <div class="section-line"></div>
+                <div class="section-title"><i class="fa-solid fa-moon me-1"></i> Sleep Information</div>
+                <div class="section-line"></div>
+            </div>
+
+            <!-- Sleep Hours -->
+            <div class="mb-4">
+                <label>Sleep Hours Per Night</label>
+                <input type="number" th:field="*{sleepHours}" class="form-control"
+                       placeholder="Hours of sleep (4-10)" required min="4" max="10"/>
+            </div>
+
+            <!-- Sleep Quality + Sleep Time -->
+            <div class="row g-4 mb-4">
+                <div class="col-sm-6">
+                    <label>Sleep Quality</label>
+                    <select th:field="*{sleepQuality}" class="form-select" required>
+                        <option value="" disabled selected>Select...</option>
+                        <option value="Poor">😴 Poor</option>
+                        <option value="Average">😐 Average</option>
+                        <option value="Good">😊 Good</option>
+                    </select>
+                </div>
+                <div class="col-sm-6">
+                    <label>Sleep Time</label>
+                    <select th:field="*{sleepTime}" class="form-select" required>
+                        <option value="" disabled selected>Select...</option>
+                        <option value="Before10pm">🌙 Before 10 PM</option>
+                        <option value="10pmTo12am">🕙 10 PM — 12 AM</option>
+                        <option value="After12am">🌃 After 12 AM</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- SUBMIT -->
+            <button type="submit" class="btn-generate">
+                Generate My Health Analysis <i class="fa-solid fa-wand-magic-sparkles"></i>
+            </button>
+
+        </form>
+    </div>
+
+    <div class="brand-footer">
+        © 2026 NutriLogic • Smart Health Intelligence
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

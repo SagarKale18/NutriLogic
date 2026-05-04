@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>NutriLogic | Create Account</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --g50:#f0fdf4;--g100:#dcfce7;--g200:#bbf7d0;--g500:#22c55e;--g600:#16a34a;--g700:#15803d;
+      --s50:#f8fafc;--s100:#f1f5f9;--s200:#e2e8f0;--s300:#cbd5e1;--s400:#94a3b8;--s500:#64748b;--s700:#334155;--s900:#0f172a;
+      --white:#fff;--shadow-green:0 8px 24px rgba(34,197,94,.22);
+    }
+    html,body{height:100%;}
+    body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--s50);color:var(--s900);}
+    .layout{display:flex;min-height:100vh;}
+
+    /* LEFT */
+    .brand-panel{
+      flex:1.1;position:relative;overflow:hidden;
+      background:linear-gradient(145deg,#064e3b 0%,#065f46 35%,#047857 65%,#059669 100%);
+      display:flex;flex-direction:column;justify-content:center;padding:70px;
+      animation:panelIn .65s cubic-bezier(.22,1,.36,1) both;
+    }
+    @keyframes panelIn{from{opacity:0;transform:translateX(-28px)}to{opacity:1;transform:translateX(0)}}
+    .dot-grid{position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(rgba(255,255,255,.13) 1px,transparent 1px);background-size:28px 28px;}
+    .deco-1{position:absolute;width:450px;height:450px;border-radius:50%;background:rgba(255,255,255,.05);top:-120px;right:-120px;pointer-events:none;}
+    .deco-2{position:absolute;width:260px;height:260px;border-radius:50%;background:rgba(255,255,255,.04);bottom:-60px;left:-50px;pointer-events:none;}
+
+    .brand-content{position:relative;z-index:2;}
+    .brand-logo{display:flex;align-items:center;gap:14px;margin-bottom:52px;}
+    .brand-logo-icon{width:48px;height:48px;border-radius:14px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:1.3rem;color:white;}
+    .brand-logo-name{font-family:'Playfair Display',serif;font-size:1.55rem;color:white;}
+
+    .brand-headline{font-family:'Playfair Display',serif;font-size:clamp(2rem,3vw,2.8rem);color:white;line-height:1.12;margin-bottom:18px;}
+    .brand-headline em{color:#6ee7b7;font-style:italic;}
+    .brand-sub{color:rgba(255,255,255,.6);font-size:.96rem;line-height:1.72;margin-bottom:48px;max-width:360px;}
+
+    .feature-list{display:flex;flex-direction:column;gap:22px;}
+    .feature{
+      display:flex;align-items:flex-start;gap:18px;
+      opacity:0;animation:featIn .5s forwards;
+    }
+    .feature:nth-child(1){animation-delay:.3s}
+    .feature:nth-child(2){animation-delay:.45s}
+    .feature:nth-child(3){animation-delay:.6s}
+    .feature:nth-child(4){animation-delay:.75s}
+    @keyframes featIn{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:translateX(0)}}
+    .feat-icon{flex-shrink:0;width:42px;height:42px;border-radius:11px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:.95rem;color:white;transition:all .3s;}
+    .feature:hover .feat-icon{background:rgba(255,255,255,.2);transform:scale(1.08);}
+    .feat-text h4{font-size:.9rem;font-weight:700;color:white;margin-bottom:3px;}
+    .feat-text p{font-size:.78rem;color:rgba(255,255,255,.52);line-height:1.6;}
+
+    /* algo badge */
+    .algo-badge{
+      display:inline-flex;align-items:center;gap:7px;
+      background:rgba(110,231,183,.15);border:1px solid rgba(110,231,183,.3);
+      border-radius:100px;padding:4px 12px;
+      font-size:.68rem;font-weight:700;color:#6ee7b7;letter-spacing:.5px;
+      text-transform:uppercase;margin-bottom:20px;
+    }
+
+    /* divider */
+    .feat-divider{height:1px;background:rgba(255,255,255,.1);margin:6px 0 20px;}
+
+    /* RIGHT */
+    .form-panel{
+      flex:1;background:var(--white);display:flex;flex-direction:column;
+      justify-content:center;align-items:center;padding:60px 70px;
+      animation:panelInR .65s .08s cubic-bezier(.22,1,.36,1) both;
+    }
+    @keyframes panelInR{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:translateX(0)}}
+    .form-box{width:100%;max-width:420px;}
+    .form-eyebrow{font-size:.72rem;letter-spacing:2px;text-transform:uppercase;color:var(--g600);font-weight:700;margin-bottom:10px;}
+    .form-title{font-family:'Playfair Display',serif;font-size:2rem;color:var(--s900);margin-bottom:6px;}
+    .form-sub{color:var(--s500);font-size:.9rem;margin-bottom:34px;}
+
+    .alert-err{background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:12px 16px;color:#b91c1c;font-size:.85rem;margin-bottom:22px;display:flex;gap:10px;align-items:center;}
+
+    .field{margin-bottom:16px;}
+    .field label{display:block;font-size:.75rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--s700);margin-bottom:8px;}
+    .input-wrap{position:relative;}
+    .input-wrap i{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--s400);font-size:.85rem;pointer-events:none;transition:color .25s;}
+    .input-wrap:focus-within i{color:var(--g500);}
+    input[type=text],input[type=email],input[type=password]{
+      width:100%;padding:13px 16px 13px 42px;
+      background:var(--s50);border:1.5px solid var(--s200);
+      border-radius:12px;color:var(--s900);
+      font-family:'Plus Jakarta Sans',sans-serif;font-size:.93rem;
+      outline:none;transition:all .25s;
+    }
+    input::placeholder{color:var(--s400);}
+    input:hover{border-color:var(--s300);}
+    input:focus{border-color:var(--g500);background:white;box-shadow:0 0 0 3px rgba(34,197,94,.1);}
+
+    .btn-submit{
+      width:100%;padding:14px;margin-top:10px;
+      background:linear-gradient(135deg,var(--g500),var(--g600));
+      border:none;border-radius:12px;cursor:pointer;color:white;
+      font-family:'Plus Jakarta Sans',sans-serif;font-size:.95rem;font-weight:700;
+      transition:transform .2s,box-shadow .25s;box-shadow:var(--shadow-green);
+    }
+    .btn-submit:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(34,197,94,.32);}
+    .form-foot{text-align:center;margin-top:22px;font-size:.86rem;color:var(--s500);}
+    .form-foot a{color:var(--g600);text-decoration:none;font-weight:700;}
+    .form-foot a:hover{color:var(--g700);}
+    .copy{text-align:center;margin-top:auto;padding-top:24px;font-size:.72rem;color:var(--s400);}
+
+    @media(max-width:900px){.brand-panel{display:none;}.form-panel{padding:40px 24px;}}
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <div class="brand-panel">
+    <div class="dot-grid"></div><div class="deco-1"></div><div class="deco-2"></div>
+    <div class="brand-content">
+
+      <div class="brand-logo">
+        <div class="brand-logo-icon"><i class="fa-solid fa-leaf"></i></div>
+        <span class="brand-logo-name">NutriLogic</span>
+      </div>
+
+      <div class="algo-badge"><i class="fa-solid fa-flask"></i> Research-Grade Health Intelligence</div>
+
+      <h1 class="brand-headline">Start your<br><em>health journey</em><br>today.</h1>
+      <p class="brand-sub">Join NutriLogic — a smart health system powered by the NHRS algorithm, Harris-Benedict BMR, Devine Ideal Weight formula, and a 7-day Indian meal plan engine.</p>
+
+      <div class="feat-divider"></div>
+
+      <div class="feature-list">
+        <div class="feature">
+          <div class="feat-icon"><i class="fa-solid fa-brain"></i></div>
+          <div class="feat-text">
+            <h4>NHRS — Novel Health Risk Score</h4>
+            <p>Original multi-factor algorithm combining BMI (35%), Medical Condition (30%), Sleep (20%) and Age (15%) to score your health risk from 0–100.</p>
+          </div>
+        </div>
+        <div class="feature">
+          <div class="feat-icon"><i class="fa-solid fa-fire"></i></div>
+          <div class="feat-text">
+            <h4>Harris-Benedict BMR + TDEE</h4>
+            <p>Calculates your Basal Metabolic Rate and daily calorie need using the clinically validated 1984 Revised Harris-Benedict equation with 5-level activity factor.</p>
+          </div>
+        </div>
+        <div class="feature">
+          <div class="feat-icon"><i class="fa-solid fa-bowl-rice"></i></div>
+          <div class="feat-text">
+            <h4>196 Indian Recipes — 7-Day Meal Plan</h4>
+            <p>Condition-specific meal plans for Diabetes, Blood Pressure, Heart Disease, Thyroid, PCOD and more — 4 meals per day, rotating daily.</p>
+          </div>
+        </div>
+        <div class="feature">
+          <div class="feat-icon"><i class="fa-solid fa-droplet"></i></div>
+          <div class="feat-text">
+            <h4>Personalised Water Goal Tracker</h4>
+            <p>Daily hydration goal calculated as Weight × 30ml per ICMR/WHO guidelines — tracked live on your dashboard with reset every 24 hours.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ RIGHT PANEL — UNTOUCHED ══ -->
+  <div class="form-panel">
+    <div class="form-box">
+      <div class="form-eyebrow">Get started free</div>
+      <h2 class="form-title">Create account</h2>
+      <p class="form-sub">Join NutriLogic and decode your nutrition today.</p>
+
+      <div th:if="${errorMessage}" class="alert-err">
+        <i class="fa-solid fa-circle-xmark"></i><span th:text="${errorMessage}"></span>
+      </div>
+
+      <form th:action="@{/register}" method="post" th:object="${user}">
+        <div class="field">
+          <label>Username</label>
+          <div class="input-wrap">
+            <i class="fa-solid fa-user"></i>
+            <input type="text" th:field="*{username}" placeholder="Choose a username" required/>
+          </div>
+        </div>
+        <div class="field">
+          <label>Email Address</label>
+          <div class="input-wrap">
+            <i class="fa-solid fa-envelope"></i>
+            <input type="email" th:field="*{email}" placeholder="you@example.com" required/>
+          </div>
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <div class="input-wrap">
+            <i class="fa-solid fa-lock"></i>
+            <input type="password" th:field="*{password}" placeholder="Create a strong password" required/>
+          </div>
+        </div>
+        <button type="submit" class="btn-submit">Create my account &rarr;</button>
+      </form>
+      <p class="form-foot">Already have an account? <a th:href="@{/login}">Sign in</a></p>
+    </div>
+    <p class="copy"> © 2026 NutriLogic • Smart Health Intelligence</p>
+  </div>
+
+</div>
+</body>
+</html>

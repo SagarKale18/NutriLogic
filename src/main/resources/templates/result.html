@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>NutriLogic | Health Analysis</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #22c55e;
+            --primary-dark: #16a34a;
+            --bg-soft: #f0fdf4;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+        }
+        body {
+            background-color: var(--bg-soft);
+            font-family: 'Poppins', sans-serif;
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .navbar {
+            background: white;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .main-card {
+            border-radius: 24px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.05);
+            background-color: white;
+            margin-top: 40px;
+            margin-bottom: 40px;
+            border: 1px solid var(--border-color);
+        }
+        .bmi-display {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border: 1px solid #bbf7d0;
+            padding: 40px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .bmi-number {
+            font-size: 4.5rem;
+            font-weight: 800;
+            color: var(--text-dark);
+            line-height: 1;
+        }
+        .scale-track {
+            height: 10px;
+            border-radius: 10px;
+            background: linear-gradient(90deg, #93c5fd, #4ade80, #fb923c, #f87171);
+            position: relative;
+            margin: 30px 0 10px;
+        }
+        .scale-marker {
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px; height: 20px;
+            border-radius: 50%;
+            background: white;
+            border: 4px solid var(--primary-dark);
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            transition: left 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            left: 0%;
+        }
+        .scale-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+        .badge-bmi {
+            display: inline-block;
+            background-color: var(--primary);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 100px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-top: 15px;
+        }
+        .section-heading {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .section-divider {
+            height: 1px;
+            background: var(--border-color);
+            margin: 28px 0;
+        }
+        /* stat mini cards */
+        .stat-mini {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 18px 12px;
+            text-align: center;
+            height: 100%;
+        }
+        .stat-icon {
+            width: 42px; height: 42px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem;
+            margin: 0 auto 10px;
+        }
+        .stat-val {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-dark);
+            line-height: 1;
+        }
+        .stat-unit { font-size: 0.68rem; color: var(--text-muted); font-weight: 600; }
+        .stat-lbl  { font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+
+        /* risk score */
+        .risk-card {
+            border-radius: 20px;
+            padding: 26px;
+            margin-bottom: 24px;
+        }
+        .risk-score-num {
+            font-size: 3.5rem;
+            font-weight: 800;
+            line-height: 1;
+        }
+        .risk-bar-track {
+            background: rgba(0,0,0,0.08);
+            border-radius: 100px;
+            height: 10px;
+            margin: 12px 0 6px;
+            overflow: hidden;
+        }
+        .risk-bar-fill {
+            height: 100%;
+            border-radius: 100px;
+            transition: width 1.5s ease;
+            width: 0%;
+        }
+
+        /* warning cards */
+        .warning-card {
+            border-radius: 14px;
+            padding: 16px 18px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            border: 1px solid;
+        }
+        .warn-icon {
+            width: 40px; height: 40px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+        .warn-red    { background: #fff5f5; border-color: #fecaca; }
+        .warn-yellow { background: #fffbeb; border-color: #fde68a; }
+        .warn-blue   { background: #eff6ff; border-color: #bfdbfe; }
+        .warn-purple { background: #faf5ff; border-color: #e9d5ff; }
+        .warn-green  { background: #f0fdf4; border-color: #bbf7d0; }
+        .warn-orange { background: #fff7ed; border-color: #fed7aa; }
+
+        /* supplement pills */
+        .supp-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #f0fdf4;
+            color: #15803d;
+            border: 1px solid #bbf7d0;
+            padding: 6px 14px;
+            border-radius: 100px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            margin: 4px;
+        }
+
+        /* recommendation */
+        .recommendation {
+            background-color: #fffbeb;
+            border: 1px solid #fde68a;
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+        }
+        .rec-icon {
+            font-size: 1.2rem;
+            color: #92400e;
+            background: #fef3c7;
+            width: 45px; height: 45px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 12px;
+            flex-shrink: 0;
+        }
+
+        /* action buttons */
+        .btn-custom {
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: 0.3s;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border: none;
+            width: 100%;
+        }
+        .btn-history   { background: #3b82f6; }
+        .btn-recipes   { background: var(--primary); }
+        .btn-dashboard { background: #6366f1; }
+        .btn-custom:hover { transform: translateY(-3px); opacity: 0.9; color: white; }
+
+        /* weight diff */
+        .weight-diff-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 100px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            margin-top: 8px;
+        }
+
+        footer { text-align: center; color: var(--text-muted); font-size: 0.8rem; padding: 20px; }
+    </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar justify-content-center">
+    <div class="d-flex align-items-center fw-bold">
+        <i class="fa-solid fa-leaf text-success me-2"></i>
+        NutriLogic <span class="mx-2 text-muted fw-light">|</span>
+        <span class="text-dark" th:text="${username}">User</span>
+    </div>
+</nav>
+
+<div class="container d-flex justify-content-center">
+    <div class="main-card p-4 p-md-5 col-lg-9">
+
+        <div class="text-center mb-4">
+            <span class="text-success text-uppercase fw-bold small" style="letter-spacing: 2px;">Analysis Complete</span>
+            <h2 class="fw-bold">Your Health Insights</h2>
+        </div>
+
+        <!-- ═══════════════════════════════════
+             1. BMI DISPLAY
+        ════════════════════════════════════ -->
+        <div class="bmi-display">
+            <p class="text-muted text-uppercase small fw-bold mb-1">Body Mass Index</p>
+            <div class="bmi-number" th:text="${bmi}">22.5</div>
+            <div class="badge-bmi" th:text="${category}">Normal Weight</div>
+            <div class="bmi-scale mt-4">
+                <div class="scale-track">
+                    <div class="scale-marker" id="marker"></div>
+                </div>
+                <div class="scale-labels">
+                    <span>Underweight<br>&lt;18.5</span>
+                    <span>Healthy<br>18.5-24.9</span>
+                    <span>Overweight<br>25-29.9</span>
+                    <span>Obese<br>≥30</span>
+                </div>
+            </div>
+
+            <!-- ✅ FIX: replaced #numbers.abs(weightDiff) → T(java.lang.Math).abs(weightDiff) -->
+            <div class="mt-3" th:if="${weightDiff != null}">
+                <div class="weight-diff-badge"
+                     th:classappend="${weightDiff > 0} ? 'bg-danger text-white' : (${weightDiff < 0} ? 'bg-warning text-dark' : 'bg-success text-white')"
+                     th:text="${weightDiff > 0} ? '↑ ' + ${weightDiff} + ' kg above ideal weight' :
+                              (${weightDiff < 0} ? '↓ ' + ${T(java.lang.Math).abs(weightDiff)} + ' kg below ideal weight' :
+                              '✓ You are at your ideal weight')">
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════
+             2. KEY METRICS — 4 stat cards
+        ════════════════════════════════════ -->
+        <div class="section-heading">
+            <i class="fa-solid fa-chart-simple" style="color:var(--primary)"></i>
+            Your Key Health Metrics
+        </div>
+        <div class="row g-3 mb-2">
+            <div class="col-6 col-md-3">
+                <div class="stat-mini">
+                    <div class="stat-icon" style="background:#dcfce7;color:#16a34a;">
+                        <i class="fa-solid fa-fire"></i>
+                    </div>
+                    <div class="stat-val" th:text="${bmr}">0</div>
+                    <div class="stat-unit">kcal / day</div>
+                    <div class="stat-lbl">BMR</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-mini">
+                    <div class="stat-icon" style="background:#dbeafe;color:#1d4ed8;">
+                        <i class="fa-solid fa-weight-scale"></i>
+                    </div>
+                    <div class="stat-val" th:text="${idealWeight}">0</div>
+                    <div class="stat-unit">kg</div>
+                    <div class="stat-lbl">Ideal Weight</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-mini">
+                    <div class="stat-icon" style="background:#ffedd5;color:#ea580c;">
+                        <i class="fa-solid fa-bolt"></i>
+                    </div>
+                    <div class="stat-val" th:text="${dailyCalorieNeed}">0</div>
+                    <div class="stat-unit">kcal / day</div>
+                    <div class="stat-lbl">Daily Need</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-mini">
+                    <div class="stat-icon" style="background:#e0f2fe;color:#0284c7;">
+                        <i class="fa-solid fa-droplet"></i>
+                    </div>
+                    <div class="stat-val" th:text="${waterGoalMl}">0</div>
+                    <div class="stat-unit">ml / day</div>
+                    <div class="stat-lbl">Water Goal</div>
+                </div>
+            </div>
+        </div>
+        <p class="text-muted small mb-4" style="font-size:0.72rem;">
+            <i class="fa-solid fa-circle-info me-1"></i>
+            BMR = Basal Metabolic Rate (Harris-Benedict) &nbsp;|&nbsp; Ideal Weight = Devine Formula &nbsp;|&nbsp; Water = Weight × 30 ml
+        </p>
+
+        <div class="section-divider"></div>
+
+        <!-- ═══════════════════════════════════
+             3. HEALTH RISK SCORE
+        ════════════════════════════════════ -->
+        <div class="section-heading">
+            <i class="fa-solid fa-shield-heart" style="color:var(--primary)"></i>
+            NutriLogic Health Risk Score (NHRS)
+        </div>
+
+        <!-- LOW RISK -->
+        <div class="risk-card border border-success bg-success bg-opacity-10"
+             th:if="${riskColor == 'success'}">
+            <div class="row align-items-center">
+                <div class="col-auto">
+                    <div class="risk-score-num text-success" th:text="${healthRiskScore}">0</div>
+                    <div class="text-muted small">out of 100</div>
+                </div>
+                <div class="col">
+                    <div class="fw-bold text-success fs-6">✓ Low Risk</div>
+                    <div class="text-muted small">Your health indicators are in a good range. Keep maintaining your current lifestyle.</div>
+                    <div class="risk-bar-track mt-2">
+                        <div class="risk-bar-fill bg-success" id="riskBar"></div>
+                    </div>
+                    <div class="d-flex justify-content-between" style="font-size:0.65rem;color:var(--text-muted)">
+                        <span>0 Low</span><span>30</span><span>60</span><span>100 High</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODERATE RISK -->
+        <div class="risk-card border border-warning bg-warning bg-opacity-10"
+             th:if="${riskColor == 'warning'}">
+            <div class="row align-items-center">
+                <div class="col-auto">
+                    <div class="risk-score-num text-warning" th:text="${healthRiskScore}">0</div>
+                    <div class="text-muted small">out of 100</div>
+                </div>
+                <div class="col">
+                    <div class="fw-bold text-warning fs-6">⚠ Moderate Risk</div>
+                    <div class="text-muted small">Some areas need attention. Follow the recommendations below carefully.</div>
+                    <div class="risk-bar-track mt-2">
+                        <div class="risk-bar-fill bg-warning" id="riskBar"></div>
+                    </div>
+                    <div class="d-flex justify-content-between" style="font-size:0.65rem;color:var(--text-muted)">
+                        <span>0 Low</span><span>30</span><span>60</span><span>100 High</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- HIGH RISK -->
+        <div class="risk-card border border-danger bg-danger bg-opacity-10"
+             th:if="${riskColor == 'danger'}">
+            <div class="row align-items-center">
+                <div class="col-auto">
+                    <div class="risk-score-num text-danger" th:text="${healthRiskScore}">0</div>
+                    <div class="text-muted small">out of 100</div>
+                </div>
+                <div class="col">
+                    <div class="fw-bold text-danger fs-6">🔴 High Risk</div>
+                    <div class="text-muted small">Multiple risk factors detected. Please consult a doctor and follow all recommendations.</div>
+                    <div class="risk-bar-track mt-2">
+                        <div class="risk-bar-fill bg-danger" id="riskBar"></div>
+                    </div>
+                    <div class="d-flex justify-content-between" style="font-size:0.65rem;color:var(--text-muted)">
+                        <span>0 Low</span><span>30</span><span>60</span><span>100 High</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <p class="text-muted mb-4" style="font-size:0.7rem;">
+            <i class="fa-solid fa-circle-info me-1"></i>
+            NHRS Algorithm: BMI (35%) + Sleep (20%) + Medical Condition (30%) + Age (15%) + Stress Bonus
+        </p>
+
+        <div class="section-divider"></div>
+
+        <!-- ═══════════════════════════════════
+             4. MEDICAL CONDITION WARNINGS
+        ════════════════════════════════════ -->
+        <div th:if="${medicalCondition != null and medicalCondition != 'None'}">
+            <div class="section-heading">
+                <i class="fa-solid fa-triangle-exclamation" style="color:#f59e0b"></i>
+                Medical Condition Alerts
+            </div>
+
+            <!-- DIABETES -->
+            <div class="warning-card warn-yellow" th:if="${medicalCondition == 'Diabetes'}">
+                <div class="warn-icon" style="background:#fef3c7; color:#b45309;">
+                    <i class="fa-solid fa-syringe"></i>
+                </div>
+                <div>
+                    <div class="fw-bold" style="color:#92400e;">Diabetes Detected</div>
+                    <div class="text-muted small">Avoid sugar, white rice, maida &amp; sweets. Prefer low GI foods like oats, brown rice, daliya. Eat small meals every 3 hours. Monitor blood sugar regularly.</div>
+                    <div class="mt-2">
+                        <span class="supp-pill"><i class="fa-solid fa-capsules"></i> Bitter Gourd Juice</span>
+                        <span class="supp-pill"><i class="fa-solid fa-capsules"></i> Methi Seeds</span>
+                        <span class="supp-pill"><i class="fa-solid fa-capsules"></i> Cinnamon Tea</span>
+                        <span class="supp-pill"><i class="fa-solid fa-capsules"></i> Chromium (consult doctor)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BLOOD PRESSURE -->
+            <div class="warning-card warn-red" th:if="${medicalCondition == 'BloodPressure'}">
+                <div class="warn-icon" style="background:#fee2e2; color:#b91c1c;">
+                    <i class="fa-solid fa-heart-pulse"></i>
+                </div>
+                <div>
+                    <div class="fw-bold" style="color:#991b1b;">Blood Pressure Detected</div>
+                    <div class="text-muted small">Reduce salt intake drastically. Avoid pickles, papad, processed foods. Follow DASH diet — more fruits, vegetables, low fat dairy. Walk 30 min daily.</div>
+                    <div class="mt-2">
+                        <span class="supp-pill"><i class="fa-solid fa-capsules"></i> Hibiscus Tea</span>
+                        <span class="supp-pill"><i class="fa-solid fa-capsules"></i> Potassium Rich Foods</span>
+                        <span class="supp-pill"><i class="fa-solid fa-capsules"></i> Garlic (raw)</span>
+                        <span class="supp-pill"><i class="fa-solid fa-capsules"></i> Magnesium (consult doctor)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HEART DISEASE -->
+            <div class="warning-card warn-red" th:if="${medicalCondition == 'HeartDisease'}">
+                <div class="warn-icon" style="background:#fee2e2; color:#b91c1c;">
+                    <i class="fa-solid fa-heart"></i>
+                </div>
+                <div>
+                    <div class="fw-bold" style="color:#991b1b;">Heart Disease Detected</div>
+                    <div class="text-muted small">Avoid saturated fats, fried foods, red meat. Include Omega-3 rich foods: fish, flaxseeds, walnuts. Do light cardio as advised by doctor. No smoking.</div>
+                    <div class="mt-2">
+                        <span class="supp-pill"><i class="fa-solid fa-capsules"></i> Omega-3 Fish Oil</span>
+                        <span class="supp-pill"><i class="fa-solid fa-capsules"></i> CoQ10 (consult doctor)</span>
+                        <span class="supp-pill"><i class="fa-solid fa-capsules"></i> Flaxseeds Daily</span>
+                        <span class="supp-pill"><i class="fa-solid fa-capsules"></i> Arjuna Bark Tea</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- THYROID -->
+            <div class="warning-card warn-blue" th:if="${medicalCondition == 'Thyroid'}">
+                <div class="warn-icon" style="background:#dbeafe; color:#1d4ed8;">
+                    <i class="fa-solid fa-stethoscope"></i>
+                </div>
+                <div>
+                    <div class="fw-bold" style="color:#1e40af;">Thyroid Condition Detected</div>
+                    <div class="text-muted small">Include iodine-rich foods: seaweed, iodized salt, dairy. Avoid raw goitrogens (broccoli, cauliflower, soy in excess). Selenium foods help — Brazil nuts, eggs, sunflower seeds.</div>
+                    <div class="mt-2">
+                        <span class="supp-pill"><i class="fa-solid fa-capsules"></i> Iodized Salt</span>
+                        <span class="supp-pill"><i class="fa-solid fa-capsules"></i> Selenium Foods</span>
+                        <span class="supp-pill"><i class="fa-solid fa-capsules"></i> Ashwagandha (consult)</span>
+                        <span class="supp-pill"><i class="fa-solid fa-capsules"></i> Brazil Nuts</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PCOD -->
+            <div class="warning-card warn-purple" th:if="${medicalCondition == 'PCOD'}">
+                <div class="warn-icon" style="background:#f3e8ff; color:#7c3aed;">
+                    <i class="fa-solid fa-venus"></i>
+                </div>
+                <div>
+                    <div class="fw-bold" style="color:#6d28d9;">PCOD Detected</div>
+                    <div class="text-muted small">Prefer anti-inflammatory foods: turmeric, ginger, berries. Avoid processed sugar and trans fats. Regular exercise helps regulate hormones. Manage stress — yoga is recommended.</div>
+                    <div class="mt-2">
+                        <span class="supp-pill"><i class="fa-solid fa-capsules"></i> Spearmint Tea</span>
+                        <span class="supp-pill"><i class="fa-solid fa-capsules"></i> Inositol (consult)</span>
+                        <span class="supp-pill"><i class="fa-solid fa-capsules"></i> Vitamin D3</span>
+                        <span class="supp-pill"><i class="fa-solid fa-capsules"></i> Omega-3</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- OTHER -->
+            <div class="warning-card warn-blue" th:if="${medicalCondition == 'Other'}">
+                <div class="warn-icon" style="background:#dbeafe; color:#1d4ed8;">
+                    <i class="fa-solid fa-notes-medical"></i>
+                </div>
+                <div>
+                    <div class="fw-bold" style="color:#1e40af;">Medical Condition Noted</div>
+                    <div class="text-muted small">You have indicated a medical condition. Please consult your doctor for personalized dietary recommendations. General advice: stay hydrated, eat balanced meals, avoid junk food.</div>
+                </div>
+            </div>
+
+            <div class="section-divider"></div>
+        </div>
+
+        <!-- ═══════════════════════════════════
+             5. SLEEP WARNING
+        ════════════════════════════════════ -->
+        <div th:if="${sleepHours != null and sleepHours < 6}">
+            <div class="section-heading">
+                <i class="fa-solid fa-moon" style="color:#6366f1"></i>
+                Sleep Analysis
+            </div>
+            <div class="warning-card warn-purple">
+                <div class="warn-icon" style="background:#ede9fe; color:#6d28d9;">
+                    <i class="fa-solid fa-moon"></i>
+                </div>
+                <div>
+                    <div class="fw-bold" style="color:#5b21b6;">Low Sleep Hours Detected —
+                        <span th:text="${sleepHours}">0</span> hrs/night
+                    </div>
+                    <div class="text-muted small">Less than 6 hours of sleep increases cortisol, promotes weight gain and slows metabolism by up to 20%. Target 7–9 hours nightly. Poor sleep also worsens insulin resistance and hunger hormones (ghrelin/leptin).</div>
+                </div>
+            </div>
+            <div class="section-divider"></div>
+        </div>
+
+        <!-- LATE SLEEP WARNING -->
+        <div th:if="${sleepTime != null and (sleepTime == 'After12am' or sleepTime == 'Between12and2am')}">
+            <div class="warning-card warn-purple mb-4">
+                <div class="warn-icon" style="background:#ede9fe; color:#6d28d9;">
+                    <i class="fa-solid fa-clock"></i>
+                </div>
+                <div>
+                    <div class="fw-bold" style="color:#5b21b6;">Late Sleep Timing Detected</div>
+                    <div class="text-muted small">Sleeping after midnight disrupts circadian rhythm and disturbs growth hormone release. This negatively impacts fat burning during night. Try to sleep before 11 PM for best metabolic health.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════
+             6. STRESS WARNING
+        ════════════════════════════════════ -->
+        <div th:if="${stressLevel == 'High'}">
+            <div class="section-heading">
+                <i class="fa-solid fa-brain" style="color:#ef4444"></i>
+                Stress Analysis
+            </div>
+            <div class="warning-card warn-red mb-4">
+                <div class="warn-icon" style="background:#fee2e2; color:#b91c1c;">
+                    <i class="fa-solid fa-brain"></i>
+                </div>
+                <div>
+                    <div class="fw-bold" style="color:#991b1b;">High Stress Level Detected</div>
+                    <div class="text-muted small">Chronic high stress raises cortisol levels leading to belly fat accumulation and poor sleep. Practice daily meditation, pranayama or yoga for 15–20 minutes. Avoid caffeine after 4 PM. Magnesium-rich foods can help.</div>
+                </div>
+            </div>
+            <div class="section-divider"></div>
+        </div>
+
+        <!-- ═══════════════════════════════════
+             7. ACTIVITY LEVEL NOTE
+        ════════════════════════════════════ -->
+        <div th:if="${activityLevel == 'VeryActive' or activityLevel == 'ExtremelyActive'}">
+            <div class="section-heading">
+                <i class="fa-solid fa-person-running" style="color:#f97316"></i>
+                Activity Level Note
+            </div>
+            <div class="warning-card warn-orange mb-4">
+                <div class="warn-icon" style="background:#ffedd5; color:#c2410c;">
+                    <i class="fa-solid fa-dumbbell"></i>
+                </div>
+                <div>
+                    <div class="fw-bold" style="color:#9a3412;">High Activity Level —
+                        <span th:text="${activityLevel}">VeryActive</span>
+                    </div>
+                    <div class="text-muted small">Your high activity demands increased protein, complex carbohydrates and electrolytes. Ensure post-workout nutrition within 45 minutes. Your daily calorie need is significantly higher — check your Daily Need above.</div>
+                    <div class="mt-2">
+                        <span class="supp-pill"><i class="fa-solid fa-capsules"></i> Whey Protein</span>
+                        <span class="supp-pill"><i class="fa-solid fa-capsules"></i> Creatine (consult)</span>
+                        <span class="supp-pill"><i class="fa-solid fa-capsules"></i> Electrolytes</span>
+                        <span class="supp-pill"><i class="fa-solid fa-capsules"></i> B-Complex Vitamins</span>
+                    </div>
+                </div>
+            </div>
+            <div class="section-divider"></div>
+        </div>
+
+        <!-- ═══════════════════════════════════
+             8. MAIN RECOMMENDATION
+        ════════════════════════════════════ -->
+        <div class="recommendation">
+            <div class="rec-icon">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+            </div>
+            <div>
+                <h6 class="fw-bold mb-1" style="color: #92400e;">NutriLogic Recommendation</h6>
+                <p class="mb-0 text-muted small"
+                   th:text="${recommendation != null ? recommendation : 'Maintain a balanced diet and regular physical activity to stay within your healthy BMI range.'}">
+                    Stay consistent with healthy meals.
+                </p>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════
+             9. ACTION BUTTONS
+        ════════════════════════════════════ -->
+        <div class="row g-3">
+            <div class="col-md-4">
+                <a th:href="@{/history}" class="btn-custom btn-history">
+                    <i class="fa-solid fa-clock-rotate-left"></i> History
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a th:href="@{/recipes}" class="btn-custom btn-recipes">
+                    <i class="fa-solid fa-plate-wheat"></i> Meal Plan
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a th:href="@{/}" class="btn-custom btn-dashboard">
+                    <i class="fa-solid fa-house-user"></i> Dashboard
+                </a>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<footer>© 2026 NutriLogic • Smart Health Intelligence</footer>
+
+<script th:inline="javascript">
+    // BMI scale marker
+    const bmiVal = [[${bmi}]];
+    const minScale = 10, maxScale = 40;
+    const percentage = Math.min(100, Math.max(0, ((bmiVal - minScale) / (maxScale - minScale)) * 100));
+    window.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => {
+            document.getElementById('marker').style.left = percentage + '%';
+        }, 500);
+
+        // Risk bar animation
+        const score = [[${healthRiskScore}]];
+        const bar = document.getElementById('riskBar');
+        if (bar) {
+            setTimeout(() => { bar.style.width = score + '%'; }, 400);
+        }
+    });
+</script>
+</body>
+</html>
